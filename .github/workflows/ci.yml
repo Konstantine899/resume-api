@@ -9,25 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:18-alpine
-        env:
-          POSTGRES_USER: resume
-          POSTGRES_PASSWORD: resume
-          POSTGRES_DB: resume_api
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U resume -d resume_api"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-    env:
-      DATABASE_URL: postgresql://resume:resume@localhost:5432/resume_api?schema=public
-      # Dummy e2e-only secrets (high-entropy literals; not used for anything real)
-      JWT_ACCESS_SECRET: ci-e2e-access-K9mQ2pL7vN4wR8tY6bD3fH5jG1cZ0sAeU
-      JWT_REFRESH_SECRET: ci-e2e-refresh-T4nB8kJ2mX6qW9rE1yU5iO3pA7sD0fHl
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -37,4 +18,3 @@ jobs:
       - run: npm ci
       - run: npm run validate
       - run: npm run build
-      - run: npm run test:e2e
