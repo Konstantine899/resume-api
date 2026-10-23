@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: resume
+      POSTGRES_PASSWORD: resume
+      POSTGRES_DB: resume_api
+    ports:
+      - '5432:5432'
+    volumes:
+      # postgres:18+ expects a single mount at /var/lib/postgresql (data lands in
+      # a versioned subdirectory, enabling pg_upgrade); mounting the legacy
+      # /var/lib/postgresql/data path makes the container exit 1.
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U resume -d resume_api']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  test-postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: resume_test
+      POSTGRES_PASSWORD: resume_test
+      POSTGRES_DB: resume_api_test
+    ports:
+      - '5433:5432'
+    volumes:
+      - test-postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U resume_test -d resume_api_test']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:
+  test-postgres-data:
