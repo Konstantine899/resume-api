@@ -19,6 +19,7 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
+      - run: npm run prisma:generate
       - run: npm run validate
       - uses: docker/login-action@v3
         with:
