@@ -93,7 +93,8 @@ describe('reuse detection (SPEC C5 / invariant I4)', () => {
     const response = await refreshCall(state.presented);
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual({ statusCode: 401, message: 'Invalid session' });
+    expect(response.body.status).toBe(401);
+    expect(response.body.detail).toBe('Invalid session');
 
     const rows = await ctx.prisma.refreshSession.findMany({ where: { userId } });
     expect(rows).toHaveLength(2);
@@ -108,7 +109,8 @@ describe('reuse detection (SPEC C5 / invariant I4)', () => {
     const response = await refreshCall(state.rotated);
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual({ statusCode: 401, message: 'Invalid session' });
+    expect(response.body.status).toBe(401);
+    expect(response.body.detail).toBe('Invalid session');
 
     const rows = await ctx.prisma.refreshSession.findMany({ where: { userId } });
     expect(rows).toHaveLength(2); // no new session was minted for the dead family
@@ -119,6 +121,7 @@ describe('reuse detection (SPEC C5 / invariant I4)', () => {
     const response = await refreshCall(null);
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual({ statusCode: 401, message: 'Invalid session' });
+    expect(response.body.status).toBe(401);
+    expect(response.body.detail).toBe('Invalid session');
   });
 });

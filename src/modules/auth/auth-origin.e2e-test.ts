@@ -55,7 +55,8 @@ describe('POST /auth/refresh origin guard (SPEC C10)', () => {
     const response = await refreshCall(state.presented, { Origin: 'http://evil.test' });
 
     expect(response.status).toBe(403);
-    expect(response.body).toEqual({ statusCode: 403, message: 'Forbidden origin' });
+    expect(response.body.status).toBe(403);
+    expect(response.body.detail).toBe('Forbidden origin');
 
     // No rotation happened: the presented session is still the only one, active.
     const rows = await ctx.prisma.refreshSession.findMany({ where: { userId } });
@@ -77,7 +78,8 @@ describe('POST /auth/refresh origin guard (SPEC C10)', () => {
     const response = await refreshCall(state.rotated, { 'Sec-Fetch-Site': 'cross-site' });
 
     expect(response.status).toBe(403);
-    expect(response.body).toEqual({ statusCode: 403, message: 'Forbidden origin' });
+    expect(response.body.status).toBe(403);
+    expect(response.body.detail).toBe('Forbidden origin');
   });
 
   it('lets non-browser clients through (no Origin, no Sec-Fetch-Site)', async () => {

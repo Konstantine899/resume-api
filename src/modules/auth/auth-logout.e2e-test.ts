@@ -81,7 +81,8 @@ describe('POST /auth/logout (SPEC C8)', () => {
     const response = await refreshCall(state.presented);
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual({ statusCode: 401, message: 'Invalid session' });
+    expect(response.body.status).toBe(401);
+    expect(response.body.detail).toBe('Invalid session');
   });
 
   it('is idempotent: without a cookie and with a garbage cookie it still answers 204', async () => {
@@ -102,6 +103,7 @@ describe('unknown refresh token (SPEC C6)', () => {
     const response = await refreshCall('never-issued-opaque-token');
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual({ statusCode: 401, message: 'Invalid session' });
+    expect(response.body.status).toBe(401);
+    expect(response.body.detail).toBe('Invalid session');
   });
 });
