@@ -11,3 +11,5 @@ export interface HealthReport {
 export function health(): HealthReport {
   return { status: 'ok', app: APP_NAME };
 }
+
+const rulesetGateTestVariable = 42;
