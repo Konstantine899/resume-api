@@ -36,6 +36,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run prisma:generate
+      - run: npx prisma migrate deploy
       - run: npm run validate
       - uses: docker/login-action@v3
         with:
