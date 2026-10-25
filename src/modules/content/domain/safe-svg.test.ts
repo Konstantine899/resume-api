@@ -9,6 +9,13 @@ describe('SafeSvg', () => {
     expect(SafeSvg.of(valid).value).toContain('<svg');
   });
 
+  it('allows safe svg without scripting constructs', () => {
+    const svg =
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z"/></svg>';
+    expect(() => SafeSvg.of(svg)).not.toThrow();
+    expect(SafeSvg.of(svg).value).toBe(svg);
+  });
+
   it('rejects script tags', () => {
     expect(() => SafeSvg.of('<svg><script>alert(1)</script></svg>')).toThrow();
   });

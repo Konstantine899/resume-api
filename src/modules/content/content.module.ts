@@ -51,6 +51,7 @@ import {
   SkillController,
   TechnologyController,
 } from './presentation/content.controller';
+import { ContentImportController } from './presentation/import.controller';
 
 @Module({
   imports: [PrismaModule, AuthModule],
@@ -62,6 +63,7 @@ import {
     SkillController,
     JobController,
     TechnologyController,
+    ContentImportController,
   ],
   providers: [
     { provide: ABOUT_REPOSITORY, useClass: PrismaAboutRepository },
