@@ -1,0 +1,12 @@
+// Prisma schema for resume-api.
+// Step 2 skeleton: no domain models yet — the User model lands in Step 3.
+// Prisma 7 no longer carries the datasource URL here: it lives in prisma7.config.ts.
+
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
