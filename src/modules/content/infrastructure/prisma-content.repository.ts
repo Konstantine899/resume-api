@@ -24,6 +24,26 @@ function asJson(value: unknown): any {
   return value as any;
 }
 
+function asLocalizedJson(value: unknown): any {
+  if (
+    value &&
+    typeof value === 'object' &&
+    typeof (value as { toJSON?: unknown }).toJSON === 'function'
+  ) {
+    return (value as { toJSON: () => unknown }).toJSON();
+  }
+  return value;
+}
+
+function asLocalizedRecord(value: unknown): any {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    out[k] = asLocalizedJson(v);
+  }
+  return out;
+}
+
 function toRecordLocalized(value: unknown): Record<string, LocalizedText> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
   const out: Record<string, LocalizedText> = {};
@@ -65,27 +85,21 @@ export class PrismaAboutRepository implements AboutRepository {
       create: {
         id: p.id,
         fullName: p.fullName,
-        descriptions: asJson(p.descriptions.map((v) => v.toJSON())),
-        stats: asJson(Object.fromEntries(Object.entries(p.stats).map(([k, v]) => [k, v.toJSON()]))),
-        statLabels: asJson(
-          p.statLabels
-            ? Object.fromEntries(Object.entries(p.statLabels).map(([k, v]) => [k, v.toJSON()]))
-            : null,
-        ),
-        ctaLabel: asJson(p.ctaLabel ? p.ctaLabel.toJSON() : null),
+        descriptions: asJson(p.descriptions.map((v) => asLocalizedJson(v))),
+        stats: asJson(asLocalizedRecord(p.stats)),
+        statLabels: asJson(p.statLabels ? asLocalizedRecord(p.statLabels) : null),
+
+        ctaLabel: asJson(p.ctaLabel ? asLocalizedJson(p.ctaLabel) : null),
         portrait: p.portrait ?? null,
         updatedAt: p.updatedAt,
       },
       update: {
         fullName: p.fullName,
-        descriptions: asJson(p.descriptions.map((v) => v.toJSON())),
-        stats: asJson(Object.fromEntries(Object.entries(p.stats).map(([k, v]) => [k, v.toJSON()]))),
-        statLabels: asJson(
-          p.statLabels
-            ? Object.fromEntries(Object.entries(p.statLabels).map(([k, v]) => [k, v.toJSON()]))
-            : null,
-        ),
-        ctaLabel: asJson(p.ctaLabel ? p.ctaLabel.toJSON() : null),
+        descriptions: asJson(p.descriptions.map((v) => asLocalizedJson(v))),
+        stats: asJson(asLocalizedRecord(p.stats)),
+        statLabels: asJson(p.statLabels ? asLocalizedRecord(p.statLabels) : null),
+
+        ctaLabel: asJson(p.ctaLabel ? asLocalizedJson(p.ctaLabel) : null),
         portrait: p.portrait ?? null,
         updatedAt: p.updatedAt,
       },
@@ -121,19 +135,15 @@ export class PrismaContactRepository implements ContactRepository {
       create: {
         id: p.id,
         email: p.email,
-        texts: asJson(Object.fromEntries(Object.entries(p.texts).map(([k, v]) => [k, v.toJSON()]))),
-        formTexts: asJson(
-          Object.fromEntries(Object.entries(p.formTexts).map(([k, v]) => [k, v.toJSON()])),
-        ),
+        texts: asJson(asLocalizedRecord(p.texts)),
+        formTexts: asJson(asLocalizedRecord(p.formTexts)),
         socialLinks: asJson(p.socialLinks),
         updatedAt: p.updatedAt,
       },
       update: {
         email: p.email,
-        texts: asJson(Object.fromEntries(Object.entries(p.texts).map(([k, v]) => [k, v.toJSON()]))),
-        formTexts: asJson(
-          Object.fromEntries(Object.entries(p.formTexts).map(([k, v]) => [k, v.toJSON()])),
-        ),
+        texts: asJson(asLocalizedRecord(p.texts)),
+        formTexts: asJson(asLocalizedRecord(p.formTexts)),
         socialLinks: asJson(p.socialLinks),
         updatedAt: p.updatedAt,
       },
