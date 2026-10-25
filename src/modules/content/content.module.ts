@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../auth/auth.module';
+import { UploadController } from './presentation/upload.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import {
   PrismaAboutRepository,
@@ -54,6 +55,7 @@ import {
 @Module({
   imports: [PrismaModule, AuthModule],
   controllers: [
+    UploadController,
     AboutController,
     ContactController,
     ProjectController,

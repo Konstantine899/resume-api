@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import type { LocalizedText } from './localized-text';
 import { LocalizedText as LT } from './localized-text';
+import { SafeSvg } from './safe-svg';
 import { ContentDomainError } from './content-domain-error';
 
 const assert = (cond: boolean, msg: string): void => {
@@ -335,6 +336,13 @@ export class SkillCategory {
     );
     const names = input.technologies.map((t) => t.name);
     assert(new Set(names).size === names.length, 'Skill duplicate technology');
+    for (const tech of input.technologies) {
+      try {
+        SafeSvg.of(tech.iconSvg);
+      } catch {
+        throw new ContentDomainError('SkillTechnology.iconSvg must be safe SVG');
+      }
+    }
     return new SkillCategory({
       id: input.id ?? randomUUID(),
       category: input.category,
@@ -364,7 +372,18 @@ export class SkillCategory {
   update(input: Partial<Omit<SkillCategoryProps, 'id' | 'updatedAt'>>): void {
     if (input.category !== undefined) this.props.category = input.category;
     if (input.categoryName !== undefined) this.props.categoryName = input.categoryName.trim();
-    if (input.technologies !== undefined) this.props.technologies = input.technologies;
+    if (input.technologies !== undefined) {
+      const names = input.technologies.map((t) => t.name);
+      assert(new Set(names).size === names.length, 'Skill duplicate technology');
+      for (const tech of input.technologies) {
+        try {
+          SafeSvg.of(tech.iconSvg);
+        } catch {
+          throw new ContentDomainError('SkillTechnology.iconSvg must be safe SVG');
+        }
+      }
+      this.props.technologies = input.technologies;
+    }
     this.props.updatedAt = new Date();
   }
   toProps(): SkillCategoryProps {
