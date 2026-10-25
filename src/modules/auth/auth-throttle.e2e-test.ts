@@ -42,13 +42,15 @@ describe('rate limit on /auth/* (SPEC C3/C15)', () => {
 
     const blocked = await loginCall(EMAIL, PASSWORD);
     expect(blocked.status).toBe(429);
-    expect(blocked.body.message).toContain('Too Many Requests');
+    expect(blocked.status).toBe(429);
+    expect(blocked.body.detail).toContain('Too Many Requests');
   });
 
   it('keys the bucket by IP+login: a different login still gets a plain 401', async () => {
     const response = await loginCall(OTHER_EMAIL, 'definitely-wrong-password');
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual({ statusCode: 401, message: 'Invalid credentials' });
+    expect(response.body.status).toBe(401);
+    expect(response.body.detail).toBe('Invalid credentials');
   });
 });

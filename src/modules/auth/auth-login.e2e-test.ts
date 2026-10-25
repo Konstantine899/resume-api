@@ -73,7 +73,8 @@ describe('POST /auth/login (SPEC C1/C2/C9)', () => {
     expect(unknown.status).toBe(401);
     expect(wrongPassword.status).toBe(401);
     expect(unknown.body).toEqual(wrongPassword.body);
-    expect(unknown.body).toEqual({ statusCode: 401, message: 'Invalid credentials' });
+    expect(unknown.body.status).toBe(401);
+    expect(unknown.body.detail).toBe('Invalid credentials');
     // No hint about the account's existence anywhere in the payload.
     expect(JSON.stringify(unknown.body)).not.toMatch(/exist|not found|user/i);
   });
@@ -87,9 +88,9 @@ describe('POST /auth/login (SPEC C1/C2/C9)', () => {
       .send({ email: EMAIL, password: PASSWORD, role: 'admin' });
 
     expect(missingPassword.status).toBe(400);
-    expect(missingPassword.body.message).toBe('Validation failed');
+    expect(missingPassword.body.detail).toBe('Validation failed');
     expect(smuggledField.status).toBe(400);
-    expect(smuggledField.body.message).toBe('Validation failed');
+    expect(smuggledField.body.detail).toBe('Validation failed');
   });
 });
 

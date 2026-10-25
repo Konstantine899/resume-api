@@ -64,6 +64,8 @@ import { RefreshOriginGuard } from './presentation/origin.guard';
     JwtAuthGuard,
   ],
   // JwtAuthGuard is exported for Step 4: content write-endpoints reuse it.
-  exports: [AdminSeedService, JwtAuthGuard],
+  // ACCESS_TOKEN_ISSUER is exported alongside so the exported guard can be
+  // instantiated in consuming modules (Nest resolves guard dependencies).
+  exports: [AdminSeedService, JwtAuthGuard, ACCESS_TOKEN_ISSUER],
 })
 export class AuthModule {}

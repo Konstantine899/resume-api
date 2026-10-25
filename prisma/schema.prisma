@@ -58,3 +58,94 @@ model RefreshSession {
   @@index([familyId, status])
   @@index([userId, deviceId])
 }
+
+// Content aggregates (Step 4). Localized strings are stored as
+// LocalizedText JSON objects ({ en, ru }) to keep the read model simple.
+
+model AboutContent {
+  id           String   @id @default("singleton")
+  fullName     String
+  descriptions Json
+  stats        Json
+  statLabels   Json?
+  ctaLabel     Json?
+  portrait     String?
+  updatedAt    DateTime @updatedAt
+
+  @@index([updatedAt])
+}
+
+model ContactContent {
+  id          String   @id @default("singleton")
+  email       String
+  texts       Json
+  formTexts   Json
+  socialLinks Json
+  updatedAt   DateTime @updatedAt
+
+  @@index([updatedAt])
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  title       String
+  description Json
+  techIcons   Json
+  link        String?
+  image       String    @default("")
+  category    String?
+  status      String?
+  featured    Boolean   @default(false)
+  role        Json?
+  metrics     Json?
+  year        Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([featured])
+  @@index([createdAt])
+  @@index([updatedAt])
+}
+
+model SkillCategory {
+  id             String  @id @default(uuid())
+  category       String  @unique
+  categoryName   String
+  technologies   Json
+  updatedAt      DateTime @updatedAt
+
+  @@index([updatedAt])
+}
+
+model Job {
+  id             String    @id @default(uuid())
+  company        String
+  position       Json
+  period         String
+  startDate      DateTime
+  endDate        DateTime?
+  description    Json
+  technologies   Json
+  location       String
+  current        Boolean   @default(false)
+  employmentType String
+  level          String
+  companyUrl     String?
+  featured       Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([current])
+  @@index([startDate])
+  @@index([featured])
+  @@index([updatedAt])
+}
+
+model Technology {
+  key           String   @id
+  url           String
+  invertInDark  Boolean?
+  updatedAt     DateTime @updatedAt
+
+  @@index([updatedAt])
+}
