@@ -8,6 +8,10 @@ const VALID_SOURCE: NodeJS.ProcessEnv = {
   DATABASE_URL: 'postgresql://postgres:postgres@localhost:5433/resume_api_test',
   JWT_SECRET: 'a'.repeat(48),
   SWAGGER_ENABLED: 'false',
+  ADMIN_EMAIL: 'admin@example.test',
+  ADMIN_PASSWORD: 'correct-horse-battery',
+  FRONTEND_ORIGIN: 'http://localhost:5173',
+  COOKIE_PATH: '/auth',
 };
 
 describe('parseEnv', () => {
@@ -18,6 +22,10 @@ describe('parseEnv', () => {
       DATABASE_URL: VALID_SOURCE.DATABASE_URL,
       JWT_SECRET: 'a'.repeat(48),
       SWAGGER_ENABLED: false,
+      ADMIN_EMAIL: 'admin@example.test',
+      ADMIN_PASSWORD: 'correct-horse-battery',
+      FRONTEND_ORIGIN: 'http://localhost:5173',
+      COOKIE_PATH: '/auth',
     });
   });
 
@@ -58,14 +66,35 @@ describe('parseEnv', () => {
     );
   });
 
-  it('defaults PORT, NODE_ENV and SWAGGER_ENABLED', () => {
+  it('defaults PORT, NODE_ENV, SWAGGER_ENABLED, FRONTEND_ORIGIN and COOKIE_PATH', () => {
     const env = parseEnv({
       DATABASE_URL: VALID_SOURCE.DATABASE_URL,
       JWT_SECRET: 'a'.repeat(48),
+      ADMIN_EMAIL: 'admin@example.test',
+      ADMIN_PASSWORD: 'correct-horse-battery',
     });
     expect(env.PORT).toBe(3000);
     expect(env.NODE_ENV).toBe('development');
     expect(env.SWAGGER_ENABLED).toBe(false);
+    expect(env.FRONTEND_ORIGIN).toBe('http://localhost:5173');
+    expect(env.COOKIE_PATH).toBe('/auth');
+  });
+
+  it('rejects a missing or invalid ADMIN_EMAIL and a short ADMIN_PASSWORD', () => {
+    const missing = { ...VALID_SOURCE };
+    delete missing.ADMIN_EMAIL;
+    expect(() => parseEnv(missing)).toThrow(/ADMIN_EMAIL/);
+    expect(() => parseEnv({ ...VALID_SOURCE, ADMIN_EMAIL: 'not-an-email' })).toThrow(/ADMIN_EMAIL/);
+    expect(() => parseEnv({ ...VALID_SOURCE, ADMIN_PASSWORD: 'short' })).toThrow(
+      /ADMIN_PASSWORD must be at least 12 characters/,
+    );
+  });
+
+  it('rejects an invalid FRONTEND_ORIGIN and a COOKIE_PATH without a leading slash', () => {
+    expect(() => parseEnv({ ...VALID_SOURCE, FRONTEND_ORIGIN: 'not-a-url' })).toThrow(
+      /FRONTEND_ORIGIN/,
+    );
+    expect(() => parseEnv({ ...VALID_SOURCE, COOKIE_PATH: 'auth' })).toThrow(/COOKIE_PATH/);
   });
 
   it('formats every failing field in the error message', () => {
