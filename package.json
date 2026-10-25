@@ -1,0 +1,52 @@
+{
+  "name": "resume-api",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Backend API for personal portfolio (NestJS + Prisma + PostgreSQL)",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json",
+    "validate": "npm run type-check && npm run lint && npm run format:check && npm run test && npm run build",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@nestjs/common": "^12.2.0",
+    "@nestjs/core": "^12.2.0",
+    "@nestjs/jwt": "^12.0.3",
+    "@nestjs/swagger": "^12.0.4",
+    "@node-rs/argon2": "^2.2.2",
+    "@prisma/client": "^7.10.1",
+    "prisma": "^7.10.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.19.2",
+    "eslint": "10.13.0",
+    "globals": "17.13.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0",
+    "vitest": "5.0.5"
+  }
+}
