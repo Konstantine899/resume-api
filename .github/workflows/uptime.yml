@@ -1,0 +1,14 @@
+name: Uptime probe (fallback only)
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe health/ready
+        run: |
+          curl -fsS "${{ secrets.UPTIME_URL }}/health/ready" -o /dev/null
