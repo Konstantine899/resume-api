@@ -9,6 +9,26 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: resume_api
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d resume_api"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/resume_api
+      # CI-only secret (>= 32 bytes); never a production credential.
+      JWT_SECRET: ci-only-jwt-secret-not-for-production-0123456789
+      SWAGGER_ENABLED: 'false'
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -16,4 +36,5 @@ jobs:
           node-version-file: .node-version
           cache: npm
       - run: npm ci
+      - run: npm run prisma:generate
       - run: npm run validate
