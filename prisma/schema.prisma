@@ -1,5 +1,6 @@
 // Prisma schema for resume-api.
-// Step 2 skeleton: no domain models yet — the User model lands in Step 3.
+// Step 3 (auth): User + RefreshSession. RefreshSession stores ONLY the
+// SHA-256 hash of the refresh token — the raw token is never persisted.
 // Prisma 7 no longer carries the datasource URL here: it lives in prisma7.config.ts.
 
 datasource db {
@@ -9,4 +10,51 @@ datasource db {
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
+}
+
+/// Single-user personal site: the only possible role is `admin`.
+enum Role {
+  ADMIN
+}
+
+/// Refresh-session lifecycle: active -> used (rotation) / revoked (reuse,
+/// logout, replaced, expired); revoked is terminal.
+enum SessionState {
+  active
+  used
+  revoked
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  /// PHC string of the argon2id hash; OWASP params (m=19456,t=2,p=1) are
+  /// embedded next to the hash, inside the same string.
+  passwordHash String
+  role         Role     @default(ADMIN)
+  createdAt    DateTime @default(now())
+
+  sessions RefreshSession[]
+}
+
+model RefreshSession {
+  id        String       @id @default(uuid())
+  familyId  String
+  userId    String
+  deviceId  String
+  /// SHA-256 hex of the refresh token; the raw token exists only in flight.
+  tokenHash String       @unique
+  status    SessionState @default(active)
+  expiresAt DateTime
+  createdAt DateTime     @default(now())
+  usedAt    DateTime?
+  revokedAt DateTime?
+  /// reuse | logout | replaced | expired
+  revokedReason String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+  @@index([familyId, status])
+  @@index([userId, deviceId])
 }

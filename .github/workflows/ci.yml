@@ -29,6 +29,10 @@ jobs:
       # CI-only secret (>= 32 bytes); never a production credential.
       JWT_SECRET: ci-only-jwt-secret-not-for-production-0123456789
       SWAGGER_ENABLED: 'false'
+      # Step 3: admin-seed contract (no public registration endpoint).
+      ADMIN_EMAIL: admin@example.test
+      ADMIN_PASSWORD: ci-only-admin-password-0123456789
+      FRONTEND_ORIGIN: http://localhost:5173
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -37,4 +41,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run prisma:generate
+      # e2e tests hit real tables (User, RefreshSession): migrations must be
+      # applied before `validate` runs the suites.
+      - run: npx prisma migrate deploy
       - run: npm run validate

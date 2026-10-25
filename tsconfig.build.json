@@ -6,5 +6,13 @@
     "outDir": "dist"
   },
   "include": ["src"],
-  "exclude": ["node_modules", "test", "**/*.spec.ts", "**/*.test.ts", "**/*.e2e-test.ts"]
+  "exclude": [
+    "node_modules",
+    "test",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.e2e-test.ts",
+    "**/test-fakes.ts",
+    "**/e2e-helpers.ts"
+  ]
 }

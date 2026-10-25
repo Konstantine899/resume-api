@@ -53,6 +53,16 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((value) => value === 'true'),
+  // Admin seed (`npm run seed:admin`): the ONLY way to create a user —
+  // the API deliberately has no public registration endpoint (step 3).
+  ADMIN_EMAIL: z.email(),
+  ADMIN_PASSWORD: z.string().min(12, 'ADMIN_PASSWORD must be at least 12 characters'),
+  // CORS allowlist: exactly the frontend origin, with credentials.
+  FRONTEND_ORIGIN: z.url().default('http://localhost:5173'),
+  // Refresh-cookie Path. '/auth' covers /auth/refresh + /auth/logout; behind
+  // the vite '/api' proxy set '/api/auth' — the browser matches the cookie
+  // path against the URL it requested, before proxying.
+  COOKIE_PATH: z.string().startsWith('/', 'COOKIE_PATH must start with "/"').default('/auth'),
 });
 
 export type Env = z.infer<typeof envSchema>;

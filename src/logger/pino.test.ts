@@ -10,6 +10,8 @@ const env = parseEnv({
   NODE_ENV: 'test',
   DATABASE_URL: 'postgresql://postgres:postgres@localhost:5433/resume_api_test',
   JWT_SECRET: 'x'.repeat(48),
+  ADMIN_EMAIL: 'admin@example.test',
+  ADMIN_PASSWORD: 'correct-horse-battery',
 });
 
 function capture(): { stream: DestinationStream; lines: () => string[] } {
