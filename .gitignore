@@ -6,3 +6,5 @@ coverage/
 /src/generated/
 .DS_Store
 *.log
+.opencode/logs/
+.opencode/context/
