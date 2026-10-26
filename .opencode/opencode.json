@@ -1,0 +1,43 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "backend-build",
+  "instructions": ["./AGENTS.md", "CONFIG.md", "RELEASE.md", "README.md"],
+  "mcp": {
+    "servers": {
+      "serena": {
+        "type": "local",
+        "command": [
+          "wsl",
+          "--exec",
+          "bash",
+          "-c",
+          "source $HOME/.local/bin/env && uvx --from git+https://github.com/oraios/serena serena start-mcp-server --context claude-code --project /mnt/d/Dev/projects/resume/backend"
+        ],
+        "disabled": true,
+        "fallback": {
+          "enabled": true,
+          "strategy": "filesystem_grep",
+          "maxFiles": 50
+        }
+      }
+    }
+  },
+  "agent": {
+    "backend-build": {
+      "description": "Primary backend builder. Full code changes, tests, migrations.",
+      "mode": "primary"
+    },
+    "backend-plan": {
+      "mode": "primary",
+      "tools": { "edit": false, "write": false, "bash": false }
+    },
+    "review": {
+      "mode": "subagent",
+      "tools": { "edit": false, "write": false, "bash": false }
+    },
+    "test-generation": {
+      "mode": "subagent",
+      "tools": { "edit": true, "write": true, "bash": true }
+    }
+  }
+}
