@@ -13,6 +13,7 @@ import type {
 import type { AccessTokenClaims, TokenRole } from '../domain/token-claims';
 import { RefreshSession } from '../domain/refresh-session';
 import type { UserAccountsProvider } from './ports';
+import { UserEmailConflictError } from '../../users/application/user-accounts.service';
 
 export class FakeClock implements Clock {
   private current: Date;
@@ -76,6 +77,8 @@ export interface FakeUserAccount {
   email: string;
   passwordHash: string;
   role: TokenRole;
+  theme?: string;
+  language?: string;
 }
 
 export class FakeAccounts implements UserAccountsProvider {
@@ -100,10 +103,32 @@ export class FakeAccounts implements UserAccountsProvider {
   async findProfileById(id: string) {
     for (const account of this.accounts.values()) {
       if (account.userId === id) {
-        return { id: account.userId, email: account.email, role: account.role };
+        return {
+          id: account.userId,
+          email: account.email,
+          role: account.role,
+          theme: account.theme ?? 'dark',
+          language: account.language ?? 'ru',
+        };
       }
     }
     return null;
+  }
+
+  async createRegisteredUser(email: string, passwordHash: string) {
+    const normalized = email.trim().toLowerCase();
+    if (this.accounts.has(normalized)) {
+      throw new UserEmailConflictError();
+    }
+    void passwordHash;
+    const account: FakeUserAccount = {
+      userId: `reg-${normalized}`,
+      email: normalized,
+      passwordHash,
+      role: 'user',
+    };
+    this.accounts.set(normalized, account);
+    return { userId: account.userId, email: normalized, role: account.role };
   }
 }
 

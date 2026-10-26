@@ -16,6 +16,7 @@ import type {
   ContactRepository,
   JobRepository,
   ProjectRepository,
+  SiteSettingsRepository,
   SkillCategoryRepository,
   TechnologyRepository,
 } from '../domain/ports';
@@ -35,6 +36,7 @@ import {
   CONTACT_REPOSITORY,
   JOB_REPOSITORY,
   PROJECT_REPOSITORY,
+  SITE_SETTINGS_REPOSITORY,
   SKILL_CATEGORY_REPOSITORY,
   TECHNOLOGY_REPOSITORY,
 } from '../content.tokens';
@@ -245,6 +247,27 @@ export class DeleteTechnologyUseCase {
   constructor(@Inject(TECHNOLOGY_REPOSITORY) private readonly repo: TechnologyRepository) {}
   async execute(key: string): Promise<void> {
     await this.repo.delete(key);
+  }
+}
+
+@Injectable()
+export class GetSiteSettingsUseCase {
+  constructor(@Inject(SITE_SETTINGS_REPOSITORY) private readonly repo: SiteSettingsRepository) {}
+  async execute(): Promise<{ resumeUrl: string | null; updatedAt: Date | null }> {
+    const settings = await this.repo.get();
+    return { resumeUrl: settings?.resumeUrl ?? null, updatedAt: settings?.updatedAt ?? null };
+  }
+}
+
+@Injectable()
+export class UpdateSiteSettingsUseCase {
+  constructor(@Inject(SITE_SETTINGS_REPOSITORY) private readonly repo: SiteSettingsRepository) {}
+  async execute(input: {
+    resumeUrl?: string | null;
+  }): Promise<{ resumeUrl: string | null; updatedAt: Date | null }> {
+    const resumeUrl = input.resumeUrl === undefined ? null : input.resumeUrl;
+    const settings = await this.repo.save(resumeUrl);
+    return { resumeUrl: settings.resumeUrl, updatedAt: settings.updatedAt };
   }
 }
 

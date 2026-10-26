@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
+  NotFoundException,
   Post,
   Req,
   Res,
@@ -16,6 +17,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
 import { LoginUseCase } from '../application/login.use-case';
+import { RegisterUseCase } from '../application/register.use-case';
 import { LogoutUseCase } from '../application/logout.use-case';
 import { MeUseCase } from '../application/me.use-case';
 import { RefreshUseCase } from '../application/refresh.use-case';
@@ -29,7 +31,7 @@ import {
 import { clearRefreshCookieOptions, readCookie, refreshCookieOptions } from './cookie';
 import { AUTH_REQUIRED, JwtAuthGuard, type AuthRequest } from './jwt-auth.guard';
 import { RefreshOriginGuard } from './origin.guard';
-import { loginSchema } from './schemas';
+import { loginSchema, registerSchema } from './schemas';
 import { AUTH_RATE_LIMIT, AUTH_RATE_WINDOW_MS, ipAndLoginTracker } from './throttle';
 import { parseBody } from './validation';
 
@@ -47,6 +49,7 @@ const AUTH_THROTTLE = {
 export class AuthController {
   constructor(
     @Inject(LoginUseCase) private readonly loginUseCase: LoginUseCase,
+    @Inject(RegisterUseCase) private readonly registerUseCase: RegisterUseCase,
     @Inject(RefreshUseCase) private readonly refreshUseCase: RefreshUseCase,
     @Inject(LogoutUseCase) private readonly logoutUseCase: LogoutUseCase,
     @Inject(MeUseCase) private readonly meUseCase: MeUseCase,
@@ -72,6 +75,31 @@ export class AuthController {
     const command = parseBody(loginSchema, body);
     try {
       const pair = await this.loginUseCase.execute(command);
+      res.cookie(
+        REFRESH_COOKIE_NAME,
+        pair.refreshToken,
+        refreshCookieOptions(this.config.cookiePath),
+      );
+      return toTokenPairResponse(pair);
+    } catch (error) {
+      throw mapAuthError(error);
+    }
+  }
+
+  @Post('register')
+  @HttpCode(HttpStatus.OK)
+  @Throttle(AUTH_THROTTLE)
+  @ApiOperation({ summary: 'Register a new user and issue a token pair' })
+  async register(
+    @Body() body: unknown,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<TokenPairResponse> {
+    if (!this.config.allowPublicRegistration) {
+      throw new NotFoundException();
+    }
+    const command = parseBody(registerSchema, body);
+    try {
+      const pair = await this.registerUseCase.execute(command);
       res.cookie(
         REFRESH_COOKIE_NAME,
         pair.refreshToken,
@@ -125,7 +153,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Current profile from a valid access token' })
   @ApiOkResponse({ description: 'id, email, role' })
   @ApiResponse({ status: 401, description: 'Missing, expired or invalid access token' })
-  async me(@Req() req: AuthRequest): Promise<{ id: string; email: string; role: string }> {
+  async me(@Req() req: AuthRequest): Promise<{
+    id: string;
+    email: string;
+    role: string;
+    theme: string;
+    language: string;
+  }> {
     if (!req.user) {
       // Defensive: JwtAuthGuard always attaches claims before this runs.
       throw new UnauthorizedException(AUTH_REQUIRED);

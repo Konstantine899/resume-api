@@ -82,7 +82,13 @@ describe('MeUseCase (SPEC C16)', () => {
       typ: 'access',
     });
 
-    expect(result).toEqual({ id: 'u-1', email: 'owner@test.local', role: 'admin' });
+    expect(result).toEqual({
+      id: 'u-1',
+      email: 'owner@test.local',
+      role: 'admin',
+      theme: 'dark',
+      language: 'ru',
+    });
   });
 
   it('rejects claims of an account that no longer exists', async () => {

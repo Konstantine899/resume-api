@@ -43,6 +43,17 @@ export interface TechnologyRepository {
   delete(key: string): Promise<void>;
 }
 
+export interface SiteSettingsRecord {
+  id: string;
+  resumeUrl: string | null;
+  updatedAt: Date;
+}
+
+export interface SiteSettingsRepository {
+  get(): Promise<SiteSettingsRecord | null>;
+  save(resumeUrl: string | null): Promise<SiteSettingsRecord>;
+}
+
 export type ContentUpdatedAction = 'create' | 'update' | 'delete';
 
 export interface ContentUpdatedEvent {

@@ -34,9 +34,10 @@ spec: SPEC.md
 - [ ] S-4. **Brute force:** `@nestjs/throttler` глобально (100/мин) + жёстче
       на `/auth/*` (5/мин per IP+login, явный tracker), 6-я попытка → 429. →
       SPEC C3, C15; e2e (6 неудачных логинов).
-- [ ] S-5. **Публичной регистрации НЕТ:** register-эндпоинта нет (→ 404);
-      CLI-сид `seed:admin` (npm-script) создаёт/обновляет админа из env
-      `ADMIN_EMAIL`/`ADMIN_PASSWORD`. → SPEC C12; e2e seed.
+- [ ] S-5. **Публичная регистрация (env-gated):** `POST /auth/register`
+      активен при `ALLOW_PUBLIC_REGISTRATION` unset/`true`, возвращает 404 при
+      `false`; выпускает только `USER`; CLI-сид `seed:admin` остаётся
+      единственным способом создания `ADMIN`. → SPEC C12/C19–C24; e2e seed.
 - [ ] S-6. **CORS-allowlist:** origin фронта из `FRONTEND_ORIGIN` +
       `credentials: true`; чужой origin → denied (нет ACAO). → SPEC C11; e2e.
 - [ ] S-7. **Ошибки generic:** 401-тела неотличимы для «нет юзера» и

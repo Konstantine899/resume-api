@@ -41,6 +41,7 @@ HTTP, zod. Prisma живёт только в `infrastructure/`.
 ## 2. Наблюдаемые критерии
 
 - Write-эндпоинты 100% защищены JwtAuthGuard → 401, не-admin → 403 (RolesGuard).
+- SiteSettings: `GET /site/settings` публичный (возвращает `resumeUrl`), `PATCH /site/settings` admin-only и обновляет `resumeUrl`.
 - Ошибки в RFC 9457 problem+json; Prisma P2002 → 409, P2025 → 404 (backstop).
 - Upload-политика: magic bytes, ≤5MB, UUID, web-root, content-type, no directory listing.
 - SafeSvg блокирует stored XSS (reject `<svg onload=...>`).

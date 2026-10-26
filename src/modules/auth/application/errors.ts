@@ -11,3 +11,6 @@ export class InvalidCredentialsError extends AuthApplicationError {}
 
 /** Unknown / expired / revoked refresh token, reuse, dead family (SPEC C6). */
 export class InvalidSessionError extends AuthApplicationError {}
+
+/** Thrown when a public registration targets an email already in use. */
+export class EmailAlreadyRegisteredError extends AuthApplicationError {}

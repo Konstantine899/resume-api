@@ -24,6 +24,7 @@ describe('parseEnv', () => {
       SWAGGER_ENABLED: false,
       ADMIN_EMAIL: 'admin@example.test',
       ADMIN_PASSWORD: 'correct-horse-battery',
+      ALLOW_PUBLIC_REGISTRATION: true,
       FRONTEND_ORIGIN: 'http://localhost:5173',
       COOKIE_PATH: '/auth',
     });

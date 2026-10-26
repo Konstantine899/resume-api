@@ -10,4 +10,6 @@ export interface AuthConfig {
   cookiePath: string;
   /** JWT_SECRET — in-memory only, never persisted or logged. */
   jwtSecret: string;
+  /** Whether public registration endpoint is enabled. */
+  allowPublicRegistration: boolean;
 }

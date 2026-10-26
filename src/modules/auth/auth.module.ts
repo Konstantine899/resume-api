@@ -5,6 +5,8 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { UsersModule } from '../users/users.module';
 import { AdminSeedService } from './application/admin-seed.service';
 import { LoginUseCase } from './application/login.use-case';
+import { RegisterUseCase } from './application/register.use-case';
+import { AuthSessionIssuer } from './application/session-issuer';
 import { LogoutUseCase } from './application/logout.use-case';
 import { MeUseCase } from './application/me.use-case';
 import { RefreshUseCase } from './application/refresh.use-case';
@@ -25,6 +27,7 @@ import { SystemClock } from './infrastructure/system-clock';
 import { AuthController } from './presentation/auth.controller';
 import { JwtAuthGuard } from './presentation/jwt-auth.guard';
 import { RefreshOriginGuard } from './presentation/origin.guard';
+import { UserPreferencesController } from './presentation/user-preferences.controller';
 
 /**
  * Composition root of the auth context: ports (domain) are bound to their
@@ -33,7 +36,7 @@ import { RefreshOriginGuard } from './presentation/origin.guard';
  */
 @Module({
   imports: [PrismaModule, UsersModule],
-  controllers: [AuthController],
+  controllers: [AuthController, UserPreferencesController],
   providers: [
     {
       provide: AUTH_CONFIG,
@@ -43,6 +46,7 @@ import { RefreshOriginGuard } from './presentation/origin.guard';
           frontendOrigin: env.FRONTEND_ORIGIN,
           cookiePath: env.COOKIE_PATH,
           jwtSecret: env.JWT_SECRET,
+          allowPublicRegistration: env.ALLOW_PUBLIC_REGISTRATION,
         };
       },
     },
@@ -55,7 +59,9 @@ import { RefreshOriginGuard } from './presentation/origin.guard';
       useFactory: (config: AuthConfig) => new JwtAccessTokenIssuer(config.jwtSecret),
       inject: [AUTH_CONFIG],
     },
+    AuthSessionIssuer,
     LoginUseCase,
+    RegisterUseCase,
     RefreshUseCase,
     LogoutUseCase,
     MeUseCase,

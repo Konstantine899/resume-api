@@ -94,13 +94,15 @@ describe('POST /auth/login (SPEC C1/C2/C9)', () => {
   });
 });
 
-describe('no public registration (SPEC C12)', () => {
-  it('POST /auth/register does not exist', async () => {
+describe('public registration gate (SPEC C12)', () => {
+  it('POST /auth/register is available when the gate is enabled', async () => {
+    const email = `register-smoke-${Math.random().toString(36).slice(2)}@e2e.test`;
     const response = await request(ctx.app.getHttpServer())
       .post('/auth/register')
-      .send({ email: 'new@test.local', password: 'whatever-123' });
+      .send({ email, password: '12345' });
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(200);
+    await deleteE2EUser(ctx.prisma, email);
   });
 });
 

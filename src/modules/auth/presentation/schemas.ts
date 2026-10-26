@@ -17,3 +17,16 @@ export const loginSchema = z
   .strict();
 
 export type LoginBody = z.output<typeof loginSchema>;
+
+export const registerSchema = z
+  .object({
+    email: z.email().max(254),
+    password: z.string().min(5).max(12),
+    deviceId: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{1,64}$/)
+      .optional(),
+  })
+  .strict();
+
+export type RegisterBody = z.output<typeof registerSchema>;
