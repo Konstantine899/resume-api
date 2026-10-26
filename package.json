@@ -19,7 +19,17 @@
     "seed:admin": "npm run build && node dist/modules/auth/presentation/cli/seed-admin.js",
     "prisma:generate": "prisma generate",
     "validate": "npm run type-check && npm run lint && npm run format:check && npm run test && npm run test:e2e && npm run build",
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev:db": "docker compose up -d db",
+    "migrate:dev": "prisma migrate dev",
+    "predev:api": "npm run type-check && npm run build",
+    "dev:api": "cross-env NODE_ENV=development node dist/main.js",
+    "dev": "concurrently -n db,api --kill-others-on-fail \"npm run dev:db\" \"npm run dev:api\"",
+    "prod:db": "docker compose up -d db",
+    "preprod:api": "npm run type-check && npm run build",
+    "prod:api": "cross-env NODE_ENV=production node dist/main.js",
+    "prod": "concurrently -n db,api --kill-others-on-fail \"npm run prod:db\" \"npm run prod:api\"",
+    "dev:stop": "docker compose down"
   },
   "lint-staged": {
     "*.{ts,js}": [
@@ -56,6 +66,8 @@
     "@types/node": "24.19.2",
     "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",
+    "concurrently": "^10.0.6",
+    "cross-env": "^10.1.0",
     "eslint": "10.13.0",
     "globals": "17.13.0",
     "husky": "9.1.7",
