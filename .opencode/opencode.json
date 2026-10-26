@@ -23,6 +23,35 @@
     }
   },
   "agent": {
+    "backend-orchestrator": {
+      "description": "Backend SDD orchestrator for resume-api. Delegates implementation and validation; never changes source.",
+      "mode": "primary",
+      "model": "opencode/mimo-v2.6-flash-free",
+      "max_tokens": 16000,
+      "permission": {
+        "question": "allow",
+        "task": {
+          "*": "deny",
+          "general": "allow",
+          "backend-build": "allow",
+          "backend-plan": "allow",
+          "review": "allow",
+          "security-reviewer": "allow",
+          "ddd-architect": "allow",
+          "test-generation": "allow"
+        }
+      },
+      "tools": {
+        "bash": false,
+        "edit": false,
+        "question": true,
+        "read": true,
+        "task": true,
+        "write": false,
+        "context7*": true
+      },
+      "prompt": "{file:D:/Dev/projects/resume/backend/.opencode/agents/backend-orchestrator.md}"
+    },
     "backend-build": {
       "description": "Primary backend builder. Full code changes, tests, migrations.",
       "mode": "primary"
