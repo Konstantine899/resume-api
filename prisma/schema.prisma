@@ -168,3 +168,27 @@ model Technology {
 
   @@index([updatedAt])
 }
+
+/// Contact-inbox MVP (plan-contact-crm.md, Variant A). Runtime only; no admin inbox yet.
+enum ContactMessageStatus {
+  NEW
+  READ
+  REPLIED
+}
+
+model ContactMessage {
+  id        String               @id @default(uuid())
+  email     String
+  subject   String?
+  body      String
+  source    String?
+  locale    String?             // en | ru
+  status    ContactMessageStatus @default(NEW)
+  createdAt DateTime            @default(now())
+  readAt    DateTime?
+  repliedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@index([email, createdAt])
+}

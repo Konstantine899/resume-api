@@ -719,3 +719,21 @@ export class DryRunContentImporter {
     };
   }
 }
+
+import { ContactMessage } from '../domain/aggregates';
+import { CONTACT_MESSAGE_REPOSITORY } from '../content.tokens';
+import type { ContactMessageRepository } from '../domain/ports';
+
+@Injectable()
+export class CreateContactMessageUseCase {
+  constructor(
+    @Inject(CONTACT_MESSAGE_REPOSITORY) private readonly repo: ContactMessageRepository,
+  ) {}
+  async execute(cmd: CreateContactMessageCommand): Promise<{ id: string }> {
+    const message = ContactMessage.create(cmd);
+    const saved = await this.repo.save(message.toCreateInput() as any);
+    return { id: (saved as { id: string }).id };
+  }
+}
+
+import type { CreateContactMessageCommand } from './commands';

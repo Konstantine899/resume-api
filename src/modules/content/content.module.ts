@@ -12,6 +12,7 @@ import {
   PrismaSkillCategoryRepository,
   PrismaTechnologyRepository,
 } from './infrastructure/prisma-content.repository';
+import { PrismaContactMessageRepository } from './infrastructure/prisma-contact-message.repository';
 import { PrismaSiteSettingsRepository } from './infrastructure/prisma-site-settings.repository';
 import {
   ABOUT_REPOSITORY,
@@ -21,9 +22,11 @@ import {
   SITE_SETTINGS_REPOSITORY,
   SKILL_CATEGORY_REPOSITORY,
   TECHNOLOGY_REPOSITORY,
+  CONTACT_MESSAGE_REPOSITORY,
 } from './content.tokens';
 import {
   CreateJobUseCase,
+  CreateContactMessageUseCase,
   CreateProjectUseCase,
   DeleteJobUseCase,
   DeleteProjectUseCase,
@@ -58,6 +61,7 @@ import {
 } from './presentation/content.controller';
 import { ContentImportController } from './presentation/import.controller';
 import { SiteSettingsController } from './presentation/site-settings.controller';
+import { ContactMessageController } from './presentation/contact-message.controller';
 
 @Module({
   imports: [PrismaModule, AuthModule, UsersModule],
@@ -71,6 +75,7 @@ import { SiteSettingsController } from './presentation/site-settings.controller'
     TechnologyController,
     ContentImportController,
     SiteSettingsController,
+    ContactMessageController,
   ],
   providers: [
     { provide: ABOUT_REPOSITORY, useClass: PrismaAboutRepository },
@@ -80,6 +85,7 @@ import { SiteSettingsController } from './presentation/site-settings.controller'
     { provide: JOB_REPOSITORY, useClass: PrismaJobRepository },
     { provide: TECHNOLOGY_REPOSITORY, useClass: PrismaTechnologyRepository },
     { provide: SITE_SETTINGS_REPOSITORY, useClass: PrismaSiteSettingsRepository },
+    { provide: CONTACT_MESSAGE_REPOSITORY, useClass: PrismaContactMessageRepository },
     GetAboutUseCase,
     UpsertAboutUseCase,
     GetContactUseCase,
@@ -98,6 +104,7 @@ import { SiteSettingsController } from './presentation/site-settings.controller'
     CreateJobUseCase,
     UpdateJobUseCase,
     UpdateSiteSettingsUseCase,
+    CreateContactMessageUseCase,
     DeleteJobUseCase,
     ListTechnologiesUseCase,
     UpsertTechnologyUseCase,
@@ -111,6 +118,7 @@ import { SiteSettingsController } from './presentation/site-settings.controller'
     PrismaJobRepository,
     PrismaTechnologyRepository,
     PrismaSiteSettingsRepository,
+    PrismaContactMessageRepository,
   ],
   exports: [DryRunContentImporter],
 })

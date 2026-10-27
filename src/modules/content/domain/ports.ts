@@ -62,3 +62,20 @@ export interface ContentUpdatedEvent {
   action: ContentUpdatedAction;
   occurredAt: Date;
 }
+
+export interface ContactMessagePropsForRepo {
+  id: string;
+  email: string;
+  subject?: string;
+  body: string;
+  source?: string;
+  locale?: string;
+  status: string;
+  createdAt: Date;
+  readAt?: Date;
+  repliedAt?: Date;
+}
+
+export interface ContactMessageRepository {
+  save(entity: ContactMessagePropsForRepo): Promise<ContactMessagePropsForRepo>;
+}

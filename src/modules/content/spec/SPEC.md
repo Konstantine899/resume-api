@@ -65,3 +65,66 @@ HTTP, zod. Prisma живёт только в `infrastructure/`.
 
 - Полноценный API transform, e2e Step 4, OpenAPI polish.
 - Реальные загрузки файлов/импорт ACL beyond stubs.
+
+---
+
+## Amendment — Contact CRM ingestion (`plan-contact-crm.md`, 2026-10-27)
+
+Scope: public `POST /contact/messages` with DB persistence, throttling, RFC7807, inbound storage only.
+
+### Новые наблюдаемые критерии
+
+- `POST /contact/messages` returns `201 Created` with `{ id }`.
+- payload:
+  - `email`: valid email
+  - `subject?`: 1..120 (optional)
+  - `body`: 1..2000 (required)
+  - `source?`: optional 1..64
+  - `locale?`: `'en' | 'ru'`
+- invalid body => 400/422 RFC problem+json
+- 6-я попытка (throttler) => 429
+- Prisma mapping только через repository (`ContactMessage` aggregate)
+- новая сообщение `status` стартует `NEW`
+- storage only transactional, no sensitive logging
+- OpenAPI drift fixed in frontend snapshot
+
+---
+
+## Amendment 4-6 — Contact CRM hardening (2026-10-27)
+
+### Data and PII
+
+- model `ContactMessage` (NEW): email, optional subject, required body, optional source, optional locale, status, timestamps
+- no `submitIpHash`; no raw IP persisted
+- email preserves local part casing, trim + domain lowercase
+- `subject <=120`, `body <=2000`, `source <=64`, `locale in {en,ru}`
+- payload max `8KB` enforced before JSON parsing
+- archive/anonymize after TTL: `email`, `subject`, `body`; coarse metadata only (`status`, `source`, `locale`, `createdAt`)
+
+### API and RFC7807
+
+- `POST /contact/messages`
+- `201` `{id}`
+- `400` malformed payload
+- `422` semantic validation
+- `429` + `Retry-After`
+- `413` on oversized body
+- `503` generic problem+json on backend failure
+- errors include `correlationId`, no internals
+- no CRM/admin endpoints in Phase 3 MVP
+
+### Throttling and proxy
+
+- per IP: 10/min, 100/day
+- per email-hash: 5/h (email normalized)
+- honeypot `website` -> `202`, no DB write
+- proxy policy must document trusted upstream subnet
+- runtime limiter in-memory only; no cluster abstraction in MVP
+
+### Security
+
+- CORS exact `FRONTEND_ORIGIN`
+- `content/chat` renders plaintext only (`no dangerouslySetInnerHTML`)
+- body/message is opaque, no markup semantics
+- outbound notifications not in Phase 3
+- EmailJS direct removal after parity/staging green check
