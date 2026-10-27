@@ -128,3 +128,21 @@ Scope: public `POST /contact/messages` with DB persistence, throttling, RFC7807,
 - body/message is opaque, no markup semantics
 - outbound notifications not in Phase 3
 - EmailJS direct removal after parity/staging green check
+
+---
+
+## Amendment — Admin Contact Inbox (Phase 4 kickoff, 2026-10-27)
+
+### Scope
+
+- `GET /admin/contact/messages` (admin only) with pagination/filtering
+- `PATCH /admin/contact/messages/:id` status `NEW`/`READ`/`REPLIED`
+- No inbox UI yet; API contract and E2E only for Phase 4 start
+
+### Criteria
+
+- 401/403 on admin endpoints
+- cursor-based or offset pagination safe to sql
+- RFC7807 on invalid id/status
+- status transition only allowed sequences
+- no sensitive log payload dump

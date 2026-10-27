@@ -27,6 +27,8 @@ import {
 import {
   CreateJobUseCase,
   CreateContactMessageUseCase,
+  ListContactMessagesUseCase,
+  UpdateContactMessageStatusUseCase,
   CreateProjectUseCase,
   DeleteJobUseCase,
   DeleteProjectUseCase,
@@ -62,6 +64,7 @@ import {
 import { ContentImportController } from './presentation/import.controller';
 import { SiteSettingsController } from './presentation/site-settings.controller';
 import { ContactMessageController } from './presentation/contact-message.controller';
+import { ContactMessageAdminController } from './presentation/contact-message-admin.controller';
 
 @Module({
   imports: [PrismaModule, AuthModule, UsersModule],
@@ -76,6 +79,7 @@ import { ContactMessageController } from './presentation/contact-message.control
     ContentImportController,
     SiteSettingsController,
     ContactMessageController,
+    ContactMessageAdminController,
   ],
   providers: [
     { provide: ABOUT_REPOSITORY, useClass: PrismaAboutRepository },
@@ -86,6 +90,16 @@ import { ContactMessageController } from './presentation/contact-message.control
     { provide: TECHNOLOGY_REPOSITORY, useClass: PrismaTechnologyRepository },
     { provide: SITE_SETTINGS_REPOSITORY, useClass: PrismaSiteSettingsRepository },
     { provide: CONTACT_MESSAGE_REPOSITORY, useClass: PrismaContactMessageRepository },
+    {
+      provide: ListContactMessagesUseCase,
+      useFactory: (repo) => new ListContactMessagesUseCase(repo),
+      inject: [CONTACT_MESSAGE_REPOSITORY],
+    },
+    {
+      provide: UpdateContactMessageStatusUseCase,
+      useFactory: (repo) => new UpdateContactMessageStatusUseCase(repo),
+      inject: [CONTACT_MESSAGE_REPOSITORY],
+    },
     GetAboutUseCase,
     UpsertAboutUseCase,
     GetContactUseCase,

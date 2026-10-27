@@ -737,3 +737,33 @@ export class CreateContactMessageUseCase {
 }
 
 import type { CreateContactMessageCommand } from './commands';
+
+@Injectable()
+export class ListContactMessagesUseCase {
+  constructor(private readonly repo: any) {}
+  async execute(options?: { status?: string | null; skip?: number; take?: number }) {
+    return this.repo.list({
+      status: options?.status && options.status !== 'ALL' ? options.status : undefined,
+      skip: options?.skip,
+      take: options?.take,
+    });
+  }
+}
+
+@Injectable()
+export class UpdateContactMessageStatusUseCase {
+  constructor(private readonly repo: any) {}
+  async execute(id: string, status: string) {
+    const desired = status.toUpperCase();
+    if (!['NEW', 'READ', 'REPLIED'].includes(desired)) {
+      throw new Error('Invalid status');
+    }
+    const existing = await this.repo.findById(id);
+    if (!existing) {
+      throw new Error('Contact message not found');
+    }
+    if (desired === 'READ') return this.repo.updateStatus(id, desired, new Date());
+    if (desired === 'REPLIED') return this.repo.updateStatus(id, desired, new Date());
+    return this.repo.updateStatus(id, desired);
+  }
+}

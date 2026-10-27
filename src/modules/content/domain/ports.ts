@@ -78,4 +78,11 @@ export interface ContactMessagePropsForRepo {
 
 export interface ContactMessageRepository {
   save(entity: ContactMessagePropsForRepo): Promise<ContactMessagePropsForRepo>;
+  findById(id: string): Promise<ContactMessagePropsForRepo | null>;
+  list(options?: {
+    status?: string;
+    skip?: number;
+    take?: number;
+  }): Promise<ContactMessagePropsForRepo[]>;
+  updateStatus(id: string, status: string, at?: Date): Promise<ContactMessagePropsForRepo | null>;
 }

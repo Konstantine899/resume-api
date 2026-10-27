@@ -51,3 +51,15 @@ spec: SPEC.md
 - [ ] H-9. frontend form submit + success clear + RFC mapping
 - [ ] H-10. text render/text-only contract + tests
 - [ ] H-11. docs/vault dual-write
+
+---
+
+# Phase 4 TODO — Admin Contact Inbox kickoff (2026-10-27)
+
+- [ ] I-0. spec/approve owner
+- [ ] I-1. repository list/update + ports
+- [ ] I-2. admin controller + guards + schema
+- [ ] I-3. use cases (`ListContactMessages`, `UpdateContactMessageStatus`)
+- [ ] I-4. e2e admin list/filter/update
+- [ ] I-5. frontend types + minimal inbox (deferred if no user?)
+- [ ] I-6. cleanup/OpenAPI sync
