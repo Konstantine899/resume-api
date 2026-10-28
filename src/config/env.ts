@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import * as path from 'node:path';
 
 import { z } from 'zod';
 
@@ -12,11 +13,11 @@ const FALSE_VALUES = new Set(['0', 'false', 'no', 'off']);
 
 /**
  * Normalizes a loose boolean flag into the enum the schema accepts, so a typo
- * still fails validation instead of silently disabling Swagger.
+ * still fails validation instead of silently disabling the feature.
  */
-function normalizeBooleanFlag(value: string | undefined): string {
+function normalizeBooleanFlag(value: string | undefined, defaultValue = 'false'): string {
   if (value === undefined || value.trim() === '') {
-    return 'false';
+    return defaultValue;
   }
 
   const normalized = value.trim().toLowerCase();
@@ -53,12 +54,17 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((value) => value === 'true'),
-  // Admin seed (`npm run seed:admin`): the ONLY way to create a user —
-  // the API deliberately has no public registration endpoint (step 3).
+  // Admin seed (`npm run seed:admin`): the only admin provisioning path.
   ADMIN_EMAIL: z.email(),
   ADMIN_PASSWORD: z.string().min(12, 'ADMIN_PASSWORD must be at least 12 characters'),
+  ALLOW_PUBLIC_REGISTRATION: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((value) => value === 'true'),
   // CORS allowlist: exactly the frontend origin, with credentials.
   FRONTEND_ORIGIN: z.url().default('http://localhost:5173'),
+  // Absolute persistent uploads directory for POST /images.
+  UPLOADS_DIR: z.string().min(1).default('uploads'),
   // Refresh-cookie Path. '/auth' covers /auth/refresh + /auth/logout; behind
   // the vite '/api' proxy set '/api/auth' — the browser matches the cookie
   // path against the URL it requested, before proxying.
@@ -84,9 +90,17 @@ export function parseEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const normalized: NodeJS.ProcessEnv = {
     ...source,
     SWAGGER_ENABLED: normalizeBooleanFlag(source.SWAGGER_ENABLED),
+    ALLOW_PUBLIC_REGISTRATION: normalizeBooleanFlag(source.ALLOW_PUBLIC_REGISTRATION, 'true'),
   };
 
   const result = envSchema.safeParse(normalized);
+  if (result.success) {
+    const nodeEnv = result.data.NODE_ENV;
+    const uploadsDir = result.data.UPLOADS_DIR;
+    if (nodeEnv === 'production' && !path.isAbsolute(uploadsDir)) {
+      throw new EnvValidationError(['UPLOADS_DIR: must be an absolute path in production']);
+    }
+  }
   if (!result.success) {
     const issues = result.error.issues.map(
       (issue) => `${issue.path.join('.') || 'environment'}: ${issue.message}`,

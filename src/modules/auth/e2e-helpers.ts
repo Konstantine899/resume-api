@@ -38,10 +38,11 @@ export async function createE2EUser(
   prisma: PrismaService,
   email: string,
   password: string,
+  role: 'ADMIN' | 'USER' = 'ADMIN',
 ): Promise<string> {
   const hasher = new Argon2PasswordHasher();
   const user = await prisma.user.create({
-    data: { email, passwordHash: await hasher.hash(password), role: 'ADMIN' },
+    data: { email, passwordHash: await hasher.hash(password), role },
   });
   return user.id;
 }

@@ -1,5 +1,13 @@
 # RELEASE.md
 
+## Pre-release database backup
+
+Before applying the Role enum migration (`20261026131406_add_role_user_and_default_user`), take a custom-format dump for rollback:
+
+`pg_dump --format=custom --file=resume_api_pre_role_<date>.dump <DATABASE_URL>`
+
+Rollback is restore-the-dump + redeploy previous build; never attempt to remove `USER` from the live enum. Migration is forward-only.
+
 ## Release steps
 
 1. Confirm `npm run validate` is green.

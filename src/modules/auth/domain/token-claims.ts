@@ -1,5 +1,5 @@
-/** The only role that exists on this personal site. */
-export type TokenRole = 'admin';
+/** The roles that can appear in an access token. */
+export type TokenRole = 'admin' | 'user';
 
 /** Claims carried by the 15-minute access token (kept in memory on the client). */
 export interface AccessTokenClaims {

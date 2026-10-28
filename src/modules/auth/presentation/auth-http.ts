@@ -1,6 +1,10 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { ConflictException, UnauthorizedException } from '@nestjs/common';
 
-import { InvalidCredentialsError, InvalidSessionError } from '../application/errors';
+import {
+  EmailAlreadyRegisteredError,
+  InvalidCredentialsError,
+  InvalidSessionError,
+} from '../application/errors';
 import type { TokenPair } from '../application/ports';
 
 export const REFRESH_COOKIE_NAME = 'refresh_token';
@@ -27,6 +31,9 @@ export function mapAuthError(error: unknown): unknown {
   }
   if (error instanceof InvalidSessionError) {
     return new UnauthorizedException({ statusCode: 401, message: 'Invalid session' });
+  }
+  if (error instanceof EmailAlreadyRegisteredError) {
+    return new ConflictException({ statusCode: 409, message: 'Email is already registered' });
   }
   return error;
 }

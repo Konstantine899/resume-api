@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuthModule } from '../auth/auth.module';
+import { UsersModule } from '../users/users.module';
 import { UploadController } from './presentation/upload.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import {
@@ -11,16 +12,23 @@ import {
   PrismaSkillCategoryRepository,
   PrismaTechnologyRepository,
 } from './infrastructure/prisma-content.repository';
+import { PrismaContactMessageRepository } from './infrastructure/prisma-contact-message.repository';
+import { PrismaSiteSettingsRepository } from './infrastructure/prisma-site-settings.repository';
 import {
   ABOUT_REPOSITORY,
   CONTACT_REPOSITORY,
   JOB_REPOSITORY,
   PROJECT_REPOSITORY,
+  SITE_SETTINGS_REPOSITORY,
   SKILL_CATEGORY_REPOSITORY,
   TECHNOLOGY_REPOSITORY,
+  CONTACT_MESSAGE_REPOSITORY,
 } from './content.tokens';
 import {
   CreateJobUseCase,
+  CreateContactMessageUseCase,
+  ListContactMessagesUseCase,
+  UpdateContactMessageStatusUseCase,
   CreateProjectUseCase,
   DeleteJobUseCase,
   DeleteProjectUseCase,
@@ -30,6 +38,7 @@ import {
   GetAboutUseCase,
   GetContactUseCase,
   GetJobUseCase,
+  GetSiteSettingsUseCase,
   GetProjectUseCase,
   ListJobsUseCase,
   ListProjectsUseCase,
@@ -37,6 +46,7 @@ import {
   ListTechnologiesUseCase,
   UpdateJobUseCase,
   UpdateProjectUseCase,
+  UpdateSiteSettingsUseCase,
   UpsertAboutUseCase,
   UpsertContactUseCase,
   UpsertSkillCategoryUseCase,
@@ -52,9 +62,12 @@ import {
   TechnologyController,
 } from './presentation/content.controller';
 import { ContentImportController } from './presentation/import.controller';
+import { SiteSettingsController } from './presentation/site-settings.controller';
+import { ContactMessageController } from './presentation/contact-message.controller';
+import { ContactMessageAdminController } from './presentation/contact-message-admin.controller';
 
 @Module({
-  imports: [PrismaModule, AuthModule],
+  imports: [PrismaModule, AuthModule, UsersModule],
   controllers: [
     UploadController,
     AboutController,
@@ -64,6 +77,9 @@ import { ContentImportController } from './presentation/import.controller';
     JobController,
     TechnologyController,
     ContentImportController,
+    SiteSettingsController,
+    ContactMessageController,
+    ContactMessageAdminController,
   ],
   providers: [
     { provide: ABOUT_REPOSITORY, useClass: PrismaAboutRepository },
@@ -72,12 +88,25 @@ import { ContentImportController } from './presentation/import.controller';
     { provide: SKILL_CATEGORY_REPOSITORY, useClass: PrismaSkillCategoryRepository },
     { provide: JOB_REPOSITORY, useClass: PrismaJobRepository },
     { provide: TECHNOLOGY_REPOSITORY, useClass: PrismaTechnologyRepository },
+    { provide: SITE_SETTINGS_REPOSITORY, useClass: PrismaSiteSettingsRepository },
+    { provide: CONTACT_MESSAGE_REPOSITORY, useClass: PrismaContactMessageRepository },
+    {
+      provide: ListContactMessagesUseCase,
+      useFactory: (repo) => new ListContactMessagesUseCase(repo),
+      inject: [CONTACT_MESSAGE_REPOSITORY],
+    },
+    {
+      provide: UpdateContactMessageStatusUseCase,
+      useFactory: (repo) => new UpdateContactMessageStatusUseCase(repo),
+      inject: [CONTACT_MESSAGE_REPOSITORY],
+    },
     GetAboutUseCase,
     UpsertAboutUseCase,
     GetContactUseCase,
     UpsertContactUseCase,
     ListProjectsUseCase,
     GetProjectUseCase,
+    GetSiteSettingsUseCase,
     CreateProjectUseCase,
     UpdateProjectUseCase,
     DeleteProjectUseCase,
@@ -88,6 +117,8 @@ import { ContentImportController } from './presentation/import.controller';
     GetJobUseCase,
     CreateJobUseCase,
     UpdateJobUseCase,
+    UpdateSiteSettingsUseCase,
+    CreateContactMessageUseCase,
     DeleteJobUseCase,
     ListTechnologiesUseCase,
     UpsertTechnologyUseCase,
@@ -100,6 +131,8 @@ import { ContentImportController } from './presentation/import.controller';
     PrismaSkillCategoryRepository,
     PrismaJobRepository,
     PrismaTechnologyRepository,
+    PrismaSiteSettingsRepository,
+    PrismaContactMessageRepository,
   ],
   exports: [DryRunContentImporter],
 })

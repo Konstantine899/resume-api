@@ -12,9 +12,26 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
-/// Single-user personal site: the only possible role is `admin`.
+/// Roles for accounts provisioned on this API.
 enum Role {
+  USER
   ADMIN
+}
+
+enum UserTheme {
+  light
+  dark
+}
+
+enum UserLanguage {
+  en
+  ru
+}
+
+model SiteSettings {
+  id        String   @id @default("singleton")
+  resumeUrl String?
+  updatedAt DateTime @updatedAt
 }
 
 /// Refresh-session lifecycle: active -> used (rotation) / revoked (reuse,
@@ -26,13 +43,15 @@ enum SessionState {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
+  id           String       @id @default(uuid())
+  email        String       @unique
   /// PHC string of the argon2id hash; OWASP params (m=19456,t=2,p=1) are
   /// embedded next to the hash, inside the same string.
   passwordHash String
-  role         Role     @default(ADMIN)
-  createdAt    DateTime @default(now())
+  role         Role         @default(USER)
+  theme        UserTheme    @default(dark)
+  language     UserLanguage @default(ru)
+  createdAt    DateTime     @default(now())
 
   sessions RefreshSession[]
 }
@@ -148,4 +167,28 @@ model Technology {
   updatedAt     DateTime @updatedAt
 
   @@index([updatedAt])
+}
+
+/// Contact-inbox MVP (plan-contact-crm.md, Variant A). Runtime only; no admin inbox yet.
+enum ContactMessageStatus {
+  NEW
+  READ
+  REPLIED
+}
+
+model ContactMessage {
+  id        String               @id @default(uuid())
+  email     String
+  subject   String?
+  body      String
+  source    String?
+  locale    String?             // en | ru
+  status    ContactMessageStatus @default(NEW)
+  createdAt DateTime            @default(now())
+  readAt    DateTime?
+  repliedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@index([email, createdAt])
 }

@@ -9,4 +9,6 @@ export interface UserRepository {
   findById(id: string): Promise<User | null>;
   /** Upsert keyed by the unique email. */
   save(user: User): Promise<void>;
+  /** Insert a new row; surfaces unique-violation as `PrismaClientKnownRequestError`. */
+  create?(user: User): Promise<void>;
 }

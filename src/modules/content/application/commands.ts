@@ -36,3 +36,11 @@ export type TechnologyUpsertCommand = Omit<TechnologyProps, 'updatedAt'>;
 
 export { type LocalizedText };
 export type { SkillTechnologyProps };
+
+export type CreateContactMessageCommand = {
+  email: string;
+  subject?: string;
+  body: string;
+  source?: string;
+  locale?: 'en' | 'ru';
+};

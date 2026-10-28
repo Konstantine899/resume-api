@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { REFRESH_TOKEN_TTL_SECONDS } from '../domain/constants';
 import { LoginUseCase } from './login.use-case';
+import { AuthSessionIssuer } from './session-issuer';
 import { InvalidCredentialsError } from './errors';
 import {
   FakeAccounts,
@@ -20,7 +21,8 @@ function makeUseCase() {
   const codec = new FakeCodec();
   const sessions = new FakeSessionRepository();
   const clock = new FakeClock();
-  const useCase = new LoginUseCase(accounts, hasher, codec, sessions, new FakeIssuer(), clock);
+  const issuer = new AuthSessionIssuer(codec, sessions, new FakeIssuer(), clock);
+  const useCase = new LoginUseCase(accounts, hasher, issuer);
   return { useCase, accounts, hasher, codec, sessions, clock };
 }
 

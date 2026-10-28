@@ -41,6 +41,7 @@ HTTP, zod. Prisma живёт только в `infrastructure/`.
 ## 2. Наблюдаемые критерии
 
 - Write-эндпоинты 100% защищены JwtAuthGuard → 401, не-admin → 403 (RolesGuard).
+- SiteSettings: `GET /site/settings` публичный (возвращает `resumeUrl`), `PATCH /site/settings` admin-only и обновляет `resumeUrl`.
 - Ошибки в RFC 9457 problem+json; Prisma P2002 → 409, P2025 → 404 (backstop).
 - Upload-политика: magic bytes, ≤5MB, UUID, web-root, content-type, no directory listing.
 - SafeSvg блокирует stored XSS (reject `<svg onload=...>`).
@@ -64,3 +65,84 @@ HTTP, zod. Prisma живёт только в `infrastructure/`.
 
 - Полноценный API transform, e2e Step 4, OpenAPI polish.
 - Реальные загрузки файлов/импорт ACL beyond stubs.
+
+---
+
+## Amendment — Contact CRM ingestion (`plan-contact-crm.md`, 2026-10-27)
+
+Scope: public `POST /contact/messages` with DB persistence, throttling, RFC7807, inbound storage only.
+
+### Новые наблюдаемые критерии
+
+- `POST /contact/messages` returns `201 Created` with `{ id }`.
+- payload:
+  - `email`: valid email
+  - `subject?`: 1..120 (optional)
+  - `body`: 1..2000 (required)
+  - `source?`: optional 1..64
+  - `locale?`: `'en' | 'ru'`
+- invalid body => 400/422 RFC problem+json
+- 6-я попытка (throttler) => 429
+- Prisma mapping только через repository (`ContactMessage` aggregate)
+- новая сообщение `status` стартует `NEW`
+- storage only transactional, no sensitive logging
+- OpenAPI drift fixed in frontend snapshot
+
+---
+
+## Amendment 4-6 — Contact CRM hardening (2026-10-27)
+
+### Data and PII
+
+- model `ContactMessage` (NEW): email, optional subject, required body, optional source, optional locale, status, timestamps
+- no `submitIpHash`; no raw IP persisted
+- email preserves local part casing, trim + domain lowercase
+- `subject <=120`, `body <=2000`, `source <=64`, `locale in {en,ru}`
+- payload max `8KB` enforced before JSON parsing
+- archive/anonymize after TTL: `email`, `subject`, `body`; coarse metadata only (`status`, `source`, `locale`, `createdAt`)
+
+### API and RFC7807
+
+- `POST /contact/messages`
+- `201` `{id}`
+- `400` malformed payload
+- `422` semantic validation
+- `429` + `Retry-After`
+- `413` on oversized body
+- `503` generic problem+json on backend failure
+- errors include `correlationId`, no internals
+- no CRM/admin endpoints in Phase 3 MVP
+
+### Throttling and proxy
+
+- per IP: 10/min, 100/day
+- per email-hash: 5/h (email normalized)
+- honeypot `website` -> `202`, no DB write
+- proxy policy must document trusted upstream subnet
+- runtime limiter in-memory only; no cluster abstraction in MVP
+
+### Security
+
+- CORS exact `FRONTEND_ORIGIN`
+- `content/chat` renders plaintext only (`no dangerouslySetInnerHTML`)
+- body/message is opaque, no markup semantics
+- outbound notifications not in Phase 3
+- EmailJS direct removal after parity/staging green check
+
+---
+
+## Amendment — Admin Contact Inbox (Phase 4 kickoff, 2026-10-27)
+
+### Scope
+
+- `GET /admin/contact/messages` (admin only) with pagination/filtering
+- `PATCH /admin/contact/messages/:id` status `NEW`/`READ`/`REPLIED`
+- No inbox UI yet; API contract and E2E only for Phase 4 start
+
+### Criteria
+
+- 401/403 on admin endpoints
+- cursor-based or offset pagination safe to sql
+- RFC7807 on invalid id/status
+- status transition only allowed sequences
+- no sensitive log payload dump

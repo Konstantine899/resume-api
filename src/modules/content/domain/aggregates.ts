@@ -517,3 +517,94 @@ export class Job {
 
 // LocalizedText re-export convenience (not used)
 export { LT as LocalizedTextCtor };
+
+// ---- ContactMessage (contact ingestion, plan-contact-crm.md) ----
+export type ContactMessageStatus = 'NEW' | 'READ' | 'REPLIED';
+
+export interface ContactMessageProps {
+  id: string;
+  email: string;
+  subject?: string;
+  body: string;
+  source?: string;
+  locale?: 'en' | 'ru';
+  status: ContactMessageStatus;
+  createdAt: Date;
+  readAt?: Date;
+  repliedAt?: Date;
+}
+
+export class ContactMessage {
+  private props: ContactMessageProps;
+  private constructor(props: ContactMessageProps) {
+    this.props = props;
+  }
+  static create(input: {
+    id?: string;
+    email: string;
+    subject?: string;
+    body: string;
+    source?: string;
+    locale?: 'en' | 'ru';
+  }): ContactMessage {
+    const email = input.email.trim();
+    assert(email.length > 0 && email.length <= 254, 'ContactMessage.email invalid');
+    const body = input.body.trim();
+    assert(body.length >= 1 && body.length <= 2000, 'ContactMessage.body invalid length');
+    const subject = input.subject?.trim();
+    if (subject) {
+      assert(subject.length <= 120, 'ContactMessage.subject too long');
+    }
+    const source = input.source?.trim();
+    if (source) {
+      assert(source.length <= 64, 'ContactMessage.source too long');
+    }
+    const locale = input.locale;
+    if (locale) {
+      assert(locale === 'en' || locale === 'ru', 'ContactMessage.locale invalid');
+    }
+    return new ContactMessage({
+      id: input.id ?? crypto.randomUUID(),
+      email,
+      subject: subject || undefined,
+      body,
+      source: source || undefined,
+      locale,
+      status: 'NEW',
+      createdAt: new Date(),
+    });
+  }
+  static reconstitute(props: ContactMessageProps): ContactMessage {
+    return new ContactMessage(props);
+  }
+  get id() {
+    return this.props.id;
+  }
+  get email() {
+    return this.props.email;
+  }
+  get subject() {
+    return this.props.subject;
+  }
+  get body() {
+    return this.props.body;
+  }
+  get source() {
+    return this.props.source;
+  }
+  get locale() {
+    return this.props.locale;
+  }
+  get status() {
+    return this.props.status;
+  }
+  get createdAt() {
+    return this.props.createdAt;
+  }
+  toProps(): ContactMessageProps {
+    return { ...this.props };
+  }
+  toCreateInput(): ContactMessageProps {
+    return this.toProps();
+  }
+}

@@ -10,7 +10,17 @@ export interface UserAccountsProvider {
   findCredentialByEmail(
     rawEmail: string,
   ): Promise<{ userId: string; passwordHash: string; role: TokenRole } | null>;
-  findProfileById(id: string): Promise<{ id: string; email: string; role: TokenRole } | null>;
+  findProfileById(id: string): Promise<{
+    id: string;
+    email: string;
+    role: TokenRole;
+    theme: string;
+    language: string;
+  } | null>;
+  createRegisteredUser(
+    email: string,
+    passwordHash: string,
+  ): Promise<{ userId: string; email: string; role: TokenRole }>;
 }
 
 /** Seed-only slice of the users facade (SPEC C12). */

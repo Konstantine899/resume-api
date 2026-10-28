@@ -1,9 +1,14 @@
 import { randomUUID } from 'node:crypto';
 
-/** The only role available on this personal site (single admin user). */
-export type UserRole = 'admin';
+/** The roles that can be assigned to an account. */
+export type UserRole = 'admin' | 'user';
 
+/** Theme preference values stored on `User.theme`. */
+export type UserTheme = 'light' | 'dark';
+/** Language preference values stored on `User.language`. */
+export type UserLanguage = 'en' | 'ru';
 export const ADMIN_ROLE: UserRole = 'admin';
+export const USER_ROLE: UserRole = 'user';
 
 const LOOSE_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_EMAIL_LENGTH = 254;
@@ -14,6 +19,8 @@ export interface UserProps {
   email: string;
   role: UserRole;
   passwordHash: string;
+  theme: UserTheme;
+  language: UserLanguage;
   createdAt: Date;
 }
 
@@ -24,11 +31,19 @@ export class UserDomainError extends Error {
   }
 }
 
+/** Raised when a unique constraint (email) is violated on persistence. */
+export class UserEmailConflictError extends Error {
+  constructor() {
+    super('User email already exists');
+    this.name = 'UserEmailConflictError';
+  }
+}
+
 /**
  * Aggregate root of the users context (users/spec/SPEC.md §1).
  * Invariants:
  *  U-I1 — email is normalized (trim + lowercase), non-empty and valid;
- *  U-I2 — the role can only be `admin`;
+ *  U-I2 — the role can only be `admin` or `user`;
  *  U-I3 — the password hash is an argon2id PHC string (params live inside it).
  */
 export class User {
@@ -49,15 +64,46 @@ export class User {
     }
   }
 
-  /** Creates the admin account (the only creation path — no public registration). */
-  static createAdmin(input: { email: string; passwordHash: string; id?: string }): User {
+  /** Creates the admin account (seed-only creation path). */
+  static createAdmin(input: {
+    email: string;
+    passwordHash: string;
+    id?: string;
+    theme?: UserTheme;
+    language?: UserLanguage;
+  }): User {
     const email = User.normalizeEmail(input.email);
     User.assertEmail(email);
+    User.assertPasswordHash(input.passwordHash);
     return new User({
       id: input.id ?? randomUUID(),
       email,
       role: ADMIN_ROLE,
       passwordHash: input.passwordHash,
+      theme: input.theme ?? 'dark',
+      language: input.language ?? 'ru',
+      createdAt: new Date(),
+    });
+  }
+
+  /** Creates a registered (public) user; role is hard-coded to `user`. */
+  static createRegisteredUser(input: {
+    email: string;
+    passwordHash: string;
+    id?: string;
+    theme?: UserTheme;
+    language?: UserLanguage;
+  }): User {
+    const email = User.normalizeEmail(input.email);
+    User.assertEmail(email);
+    User.assertPasswordHash(input.passwordHash);
+    return new User({
+      id: input.id ?? randomUUID(),
+      email,
+      role: USER_ROLE,
+      passwordHash: input.passwordHash,
+      theme: input.theme ?? 'dark',
+      language: input.language ?? 'ru',
       createdAt: new Date(),
     });
   }
@@ -65,7 +111,21 @@ export class User {
   /** Re-hydrates a stored row, re-checking every invariant. */
   static reconstitute(props: UserProps): User {
     User.assertEmail(props.email);
-    return new User(props);
+    return new User({
+      ...props,
+      theme: props.theme ?? 'dark',
+      language: props.language ?? 'ru',
+    });
+  }
+
+  /** Mutates the stored preference columns. */
+  changePreferences(input: { theme?: UserTheme; language?: UserLanguage }): void {
+    if (input.theme !== undefined) {
+      this.props.theme = input.theme;
+    }
+    if (input.language !== undefined) {
+      this.props.language = input.language;
+    }
   }
 
   get id(): string {
@@ -84,18 +144,26 @@ export class User {
     return this.props.passwordHash;
   }
 
+  get theme(): UserTheme {
+    return this.props.theme;
+  }
+
+  get language(): UserLanguage {
+    return this.props.language;
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
 
   /** Seed-only mutation: rotate the stored password hash. */
   changePassword(passwordHash: string): void {
-    this.validatePasswordHash(passwordHash);
+    User.assertPasswordHash(passwordHash);
     this.props.passwordHash = passwordHash;
   }
 
-  private validatePasswordHash(hash: string): void {
-    if (!hash.startsWith(ARGON2ID_PHC_PREFIX)) {
+  private static assertPasswordHash(passwordHash: string): void {
+    if (!passwordHash.startsWith(ARGON2ID_PHC_PREFIX)) {
       throw new UserDomainError('U-I3: passwordHash must be an argon2id PHC string');
     }
   }

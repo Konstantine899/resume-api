@@ -43,6 +43,17 @@ export interface TechnologyRepository {
   delete(key: string): Promise<void>;
 }
 
+export interface SiteSettingsRecord {
+  id: string;
+  resumeUrl: string | null;
+  updatedAt: Date;
+}
+
+export interface SiteSettingsRepository {
+  get(): Promise<SiteSettingsRecord | null>;
+  save(resumeUrl: string | null): Promise<SiteSettingsRecord>;
+}
+
 export type ContentUpdatedAction = 'create' | 'update' | 'delete';
 
 export interface ContentUpdatedEvent {
@@ -50,4 +61,28 @@ export interface ContentUpdatedEvent {
   id: string;
   action: ContentUpdatedAction;
   occurredAt: Date;
+}
+
+export interface ContactMessagePropsForRepo {
+  id: string;
+  email: string;
+  subject?: string;
+  body: string;
+  source?: string;
+  locale?: string;
+  status: string;
+  createdAt: Date;
+  readAt?: Date;
+  repliedAt?: Date;
+}
+
+export interface ContactMessageRepository {
+  save(entity: ContactMessagePropsForRepo): Promise<ContactMessagePropsForRepo>;
+  findById(id: string): Promise<ContactMessagePropsForRepo | null>;
+  list(options?: {
+    status?: string;
+    skip?: number;
+    take?: number;
+  }): Promise<ContactMessagePropsForRepo[]>;
+  updateStatus(id: string, status: string, at?: Date): Promise<ContactMessagePropsForRepo | null>;
 }

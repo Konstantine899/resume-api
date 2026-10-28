@@ -7,9 +7,10 @@ import { SeedModule } from './seed.module';
 /**
  * CLI entry point: `npm run seed:admin`.
  *
- * The ONLY way to create a user on this site (SPEC C12): reads
- * ADMIN_EMAIL / ADMIN_PASSWORD from the (validated) environment, hashes the
- * password with argon2id and upserts the admin idempotently.
+ * Admin provisioning path (SPEC C12): reads ADMIN_EMAIL / ADMIN_PASSWORD from
+ * the (validated) environment, hashes the password with argon2id and upserts
+ * the admin idempotently. Public registration (when enabled) creates
+ * non-admin users and never grants admin.
  */
 async function main(): Promise<void> {
   const env = validateEnv();

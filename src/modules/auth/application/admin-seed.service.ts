@@ -16,9 +16,9 @@ export interface AdminSeedResult {
 }
 
 /**
- * The ONLY way to create a user on this site (SPEC C12): `npm run seed:admin`
- * hashes the env password with argon2id and hands the hash to the users
- * facade, which upserts the admin idempotently.
+ * Admin provisioning path (SPEC C12): `npm run seed:admin` hashes the env
+ * password with argon2id and hands the hash to the users facade, which upserts
+ * the admin idempotently. Public registration creates non-admin users only.
  */
 @Injectable()
 export class AdminSeedService {

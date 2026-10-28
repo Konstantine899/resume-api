@@ -9,6 +9,8 @@ export interface MeResult {
   id: string;
   email: string;
   role: string;
+  theme: string;
+  language: string;
 }
 
 /**
@@ -25,6 +27,12 @@ export class MeUseCase {
     if (!profile) {
       throw new InvalidSessionError('Invalid session');
     }
-    return { id: profile.id, email: profile.email, role: profile.role };
+    return {
+      id: profile.id,
+      email: profile.email,
+      role: profile.role,
+      theme: profile.theme,
+      language: profile.language,
+    };
   }
 }
