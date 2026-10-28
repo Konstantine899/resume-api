@@ -79,12 +79,14 @@ export class AboutController {
     private readonly getAbout: GetAboutUseCase,
     private readonly upsertAbout: UpsertAboutUseCase,
   ) {}
-  @Get() get() {
-    return this.getAbout.execute();
+  @Get() async get() {
+    const result = await this.getAbout.execute();
+    return result ? result.toProps() : null;
   }
-  @Put() @UseGuards(...GUARDS) upsert(@Body() body: unknown) {
+  @Put() @UseGuards(...GUARDS) async upsert(@Body() body: unknown) {
     const cmd: AboutUpsertCommand = parseOrThrow<AboutUpsertCommand>(aboutUpsertSchema, body);
-    return this.upsertAbout.execute(cmd);
+    const result = await this.upsertAbout.execute(cmd);
+    return result.toProps();
   }
 }
 

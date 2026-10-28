@@ -1,3 +1,4 @@
+import * as fs from 'node:fs';
 import { Logger } from '@nestjs/common';
 
 import { validateEnv } from './config/env';
@@ -9,6 +10,10 @@ import { createApp } from './create-app';
  */
 export async function bootstrap(): Promise<void> {
   const env = validateEnv();
+  // Ensure persistent uploads directory exists before listening.
+  const uploadsDir = env.UPLOADS_DIR;
+  fs.mkdirSync(uploadsDir, { recursive: true });
+
   const app = await createApp(env);
 
   await app.listen(env.PORT);

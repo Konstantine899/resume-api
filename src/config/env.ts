@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import * as path from 'node:path';
 
 import { z } from 'zod';
 
@@ -62,6 +63,8 @@ const envSchema = z.object({
     .transform((value) => value === 'true'),
   // CORS allowlist: exactly the frontend origin, with credentials.
   FRONTEND_ORIGIN: z.url().default('http://localhost:5173'),
+  // Absolute persistent uploads directory for POST /images.
+  UPLOADS_DIR: z.string().min(1).default('uploads'),
   // Refresh-cookie Path. '/auth' covers /auth/refresh + /auth/logout; behind
   // the vite '/api' proxy set '/api/auth' — the browser matches the cookie
   // path against the URL it requested, before proxying.
@@ -91,6 +94,13 @@ export function parseEnv(source: NodeJS.ProcessEnv = process.env): Env {
   };
 
   const result = envSchema.safeParse(normalized);
+  if (result.success) {
+    const nodeEnv = result.data.NODE_ENV;
+    const uploadsDir = result.data.UPLOADS_DIR;
+    if (nodeEnv === 'production' && !path.isAbsolute(uploadsDir)) {
+      throw new EnvValidationError(['UPLOADS_DIR: must be an absolute path in production']);
+    }
+  }
   if (!result.success) {
     const issues = result.error.issues.map(
       (issue) => `${issue.path.join('.') || 'environment'}: ${issue.message}`,
