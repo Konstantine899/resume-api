@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import { EnvValidationError, parseEnv, validateEnv } from './env';
@@ -26,7 +28,17 @@ describe('parseEnv', () => {
       ADMIN_PASSWORD: 'correct-horse-battery',
       FRONTEND_ORIGIN: 'http://localhost:5173',
       COOKIE_PATH: '/auth',
+      UPLOADS_DIR: 'uploads',
     });
+  });
+
+  it('requires an absolute UPLOADS_DIR in production', () => {
+    expect(() =>
+      parseEnv({ ...VALID_SOURCE, NODE_ENV: 'production', UPLOADS_DIR: 'uploads' }),
+    ).toThrow(/UPLOADS_DIR must be an absolute path in production/);
+    expect(() =>
+      parseEnv({ ...VALID_SOURCE, NODE_ENV: 'production', UPLOADS_DIR: resolve('uploads') }),
+    ).not.toThrow();
   });
 
   it('rejects a JWT_SECRET shorter than 32 bytes', () => {
@@ -66,7 +78,7 @@ describe('parseEnv', () => {
     );
   });
 
-  it('defaults PORT, NODE_ENV, SWAGGER_ENABLED, FRONTEND_ORIGIN and COOKIE_PATH', () => {
+  it('defaults PORT, NODE_ENV, SWAGGER_ENABLED, FRONTEND_ORIGIN, COOKIE_PATH and UPLOADS_DIR', () => {
     const env = parseEnv({
       DATABASE_URL: VALID_SOURCE.DATABASE_URL,
       JWT_SECRET: 'a'.repeat(48),
@@ -78,6 +90,7 @@ describe('parseEnv', () => {
     expect(env.SWAGGER_ENABLED).toBe(false);
     expect(env.FRONTEND_ORIGIN).toBe('http://localhost:5173');
     expect(env.COOKIE_PATH).toBe('/auth');
+    expect(env.UPLOADS_DIR).toBe('uploads');
   });
 
   it('rejects a missing or invalid ADMIN_EMAIL and a short ADMIN_PASSWORD', () => {

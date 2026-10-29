@@ -37,13 +37,27 @@ export class Rfc7807ExceptionFilter implements ExceptionFilter {
         map(HttpStatus.NOT_FOUND, 'Not Found', message ?? 'resource not found');
       } else if (name === 'ContentConflictError' || name.endsWith('ConflictError')) {
         map(HttpStatus.CONFLICT, 'Conflict', message ?? 'conflict');
+      } else if (name === 'UnsupportedMediaFormatError') {
+        map(
+          HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+          'Unsupported Media Type',
+          message ?? 'unsupported media type',
+        );
+      } else if (name === 'MediaStorageFullError') {
+        map(
+          HttpStatus.INSUFFICIENT_STORAGE,
+          'Insufficient Storage',
+          message ?? 'media storage is full',
+        );
+      } else if (name === 'MediaStorageAccessError') {
+        map(HttpStatus.FORBIDDEN, 'Forbidden', message ?? 'media storage is not writable');
       } else if (name === 'ContentValidationError' || name.endsWith('ValidationError')) {
         map(HttpStatus.UNPROCESSABLE_ENTITY, 'Validation Error', message ?? 'invalid input');
       } else if (name === 'ContentDomainError' || name.endsWith('DomainError')) {
         map(HttpStatus.BAD_REQUEST, 'Domain Error', message ?? 'invalid input');
       }
     }
-    if (status >= 500) {
+    if (status >= 500 && status !== HttpStatus.INSUFFICIENT_STORAGE) {
       detail = 'Internal server error.';
       title = 'Internal Server Error';
     }

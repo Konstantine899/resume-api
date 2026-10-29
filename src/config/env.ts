@@ -1,5 +1,7 @@
 import 'dotenv/config';
 
+import { isAbsolute } from 'node:path';
+
 import { z } from 'zod';
 
 /** Minimum entropy for JWT_SECRET, measured in UTF-8 bytes. */
@@ -29,41 +31,54 @@ function normalizeBooleanFlag(value: string | undefined): string {
   return normalized;
 }
 
-const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().int().min(1).max(65535).default(3000),
-  DATABASE_URL: z
-    .string()
-    .min(1, 'DATABASE_URL must not be empty')
-    .refine((value) => POSTGRES_URL_PATTERN.test(value), {
-      message: 'DATABASE_URL must be a postgresql:// connection string',
+const envSchema = z
+  .object({
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+    DATABASE_URL: z
+      .string()
+      .min(1, 'DATABASE_URL must not be empty')
+      .refine((value) => POSTGRES_URL_PATTERN.test(value), {
+        message: 'DATABASE_URL must be a postgresql:// connection string',
+      }),
+    JWT_SECRET: z.string().superRefine((value, ctx) => {
+      const bytes = Buffer.byteLength(value, 'utf8');
+      if (bytes < MIN_JWT_SECRET_BYTES) {
+        ctx.addIssue({
+          code: 'custom',
+          message:
+            `JWT_SECRET must be at least ${MIN_JWT_SECRET_BYTES} bytes (got ${bytes}). ` +
+            "Generate one with: node -e \"console.log(require('crypto').randomBytes(48).toString('base64url'))\"",
+        });
+      }
     }),
-  JWT_SECRET: z.string().superRefine((value, ctx) => {
-    const bytes = Buffer.byteLength(value, 'utf8');
-    if (bytes < MIN_JWT_SECRET_BYTES) {
+    SWAGGER_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    // Admin seed (`npm run seed:admin`): the ONLY way to create a user —
+    // the API deliberately has no public registration endpoint (step 3).
+    ADMIN_EMAIL: z.email(),
+    ADMIN_PASSWORD: z.string().min(12, 'ADMIN_PASSWORD must be at least 12 characters'),
+    // CORS allowlist: exactly the frontend origin, with credentials.
+    FRONTEND_ORIGIN: z.url().default('http://localhost:5173'),
+    // Refresh-cookie Path. '/auth' covers /auth/refresh + /auth/logout; behind
+    // the vite '/api' proxy set '/api/auth' — the browser matches the cookie
+    // path against the URL it requested, before proxying.
+    COOKIE_PATH: z.string().startsWith('/', 'COOKIE_PATH must start with "/"').default('/auth'),
+    // Media root (plan WU-1): relative in dev/test, absolute in production so
+    // a container never writes into an accidental working directory.
+    UPLOADS_DIR: z.string().min(1, 'UPLOADS_DIR must not be empty').default('uploads'),
+  })
+  .superRefine((value, ctx) => {
+    if (value.NODE_ENV === 'production' && !isAbsolute(value.UPLOADS_DIR)) {
       ctx.addIssue({
         code: 'custom',
-        message:
-          `JWT_SECRET must be at least ${MIN_JWT_SECRET_BYTES} bytes (got ${bytes}). ` +
-          "Generate one with: node -e \"console.log(require('crypto').randomBytes(48).toString('base64url'))\"",
+        path: ['UPLOADS_DIR'],
+        message: 'UPLOADS_DIR must be an absolute path in production',
       });
     }
-  }),
-  SWAGGER_ENABLED: z
-    .enum(['true', 'false'])
-    .default('false')
-    .transform((value) => value === 'true'),
-  // Admin seed (`npm run seed:admin`): the ONLY way to create a user —
-  // the API deliberately has no public registration endpoint (step 3).
-  ADMIN_EMAIL: z.email(),
-  ADMIN_PASSWORD: z.string().min(12, 'ADMIN_PASSWORD must be at least 12 characters'),
-  // CORS allowlist: exactly the frontend origin, with credentials.
-  FRONTEND_ORIGIN: z.url().default('http://localhost:5173'),
-  // Refresh-cookie Path. '/auth' covers /auth/refresh + /auth/logout; behind
-  // the vite '/api' proxy set '/api/auth' — the browser matches the cookie
-  // path against the URL it requested, before proxying.
-  COOKIE_PATH: z.string().startsWith('/', 'COOKIE_PATH must start with "/"').default('/auth'),
-});
+  });
 
 export type Env = z.infer<typeof envSchema>;
 
