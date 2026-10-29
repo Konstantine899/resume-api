@@ -11,6 +11,7 @@ export class Rfc7807ExceptionFilter implements ExceptionFilter {
     let title = 'Internal Server Error';
     let detail = 'An unexpected error occurred.';
     let type = 'about:blank';
+    let conflicts: unknown;
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const r = exception.getResponse();
@@ -35,6 +36,9 @@ export class Rfc7807ExceptionFilter implements ExceptionFilter {
       };
       if (name === 'ContentNotFoundError' || name.endsWith('NotFoundError')) {
         map(HttpStatus.NOT_FOUND, 'Not Found', message ?? 'resource not found');
+      } else if (name === 'AboutConflictError') {
+        map(HttpStatus.CONFLICT, 'Conflict', message ?? 'conflict');
+        conflicts = (exception as { conflicts?: unknown }).conflicts;
       } else if (name === 'ContentConflictError' || name.endsWith('ConflictError')) {
         map(HttpStatus.CONFLICT, 'Conflict', message ?? 'conflict');
       } else if (name === 'UnsupportedMediaFormatError') {
@@ -70,6 +74,7 @@ export class Rfc7807ExceptionFilter implements ExceptionFilter {
         status,
         detail,
         instance: (req.originalUrl ?? req.url ?? '/').split('?')[0] || '/',
+        ...(conflicts !== undefined ? { conflicts } : {}),
       });
   }
 }

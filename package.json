@@ -29,7 +29,9 @@
     "preprod:api": "npm run type-check && npm run build",
     "prod:api": "cross-env NODE_ENV=production node dist/main.js",
     "prod": "concurrently -n db,api --kill-others-on-fail \"npm run prod:db\" \"npm run prod:api\"",
-    "dev:stop": "docker compose down"
+    "dev:stop": "docker compose down",
+    "migrate:media:paths": "npm run build && node dist/modules/media/presentation/cli/migrate-document-image-paths.js",
+    "backfill:media:variants": "npm run build && node dist/modules/media/presentation/cli/backfill-media-variants.js"
   },
   "lint-staged": {
     "*.{ts,js}": [

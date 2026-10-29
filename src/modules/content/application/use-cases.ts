@@ -19,9 +19,10 @@ import type {
   SkillCategoryRepository,
   TechnologyRepository,
 } from '../domain/ports';
-import { ContentNotFoundError } from './errors';
+import { AboutConflictError, ContentNotFoundError } from './errors';
 import type {
   AboutUpsertCommand,
+  AboutUpsertResult,
   ContactUpsertCommand,
   JobCreateCommand,
   JobUpdateCommand,
@@ -50,16 +51,49 @@ export class GetAboutUseCase {
 @Injectable()
 export class UpsertAboutUseCase {
   constructor(@Inject(ABOUT_REPOSITORY) private readonly repo: AboutRepository) {}
-  async execute(cmd: AboutUpsertCommand): Promise<AboutContent> {
+  async execute(cmd: AboutUpsertCommand): Promise<AboutUpsertResult> {
     const existing = await this.repo.get();
     if (!existing) {
       const created = AboutContent.create(cmd as never);
       await this.repo.save(created);
-      return created;
+      return { content: created, replacedMediaKey: null };
     }
+
+    // Optimistic concurrency (plan WU-3/D8): an older client must not
+    // silently overwrite a newer document.
+    if (cmd.expectedUpdatedAt !== undefined) {
+      const expected = new Date(cmd.expectedUpdatedAt);
+      if (Number.isNaN(expected.getTime())) {
+        throw new AboutConflictError(
+          'expectedUpdatedAt is not a valid timestamp',
+          existing.updatedAt,
+        );
+      }
+      if (expected.getTime() !== existing.updatedAt.getTime()) {
+        throw new AboutConflictError('About was modified concurrently', existing.updatedAt);
+      }
+    }
+
+    // Captured before `update()` bumps `updatedAt` to "now".
+    const previousPortraitKey =
+      typeof existing.portrait === 'string' ? existing.portrait.trim() : null;
+
     existing.update(cmd);
     await this.repo.save(existing);
-    return existing;
+
+    let replacedMediaKey: string | null = null;
+    const nextPortrait = existing.portrait;
+    if (
+      typeof previousPortraitKey === 'string' &&
+      previousPortraitKey.length > 0 &&
+      previousPortraitKey !== nextPortrait &&
+      typeof nextPortrait === 'string' &&
+      nextPortrait.trim().length > 0
+    ) {
+      replacedMediaKey = previousPortraitKey;
+    }
+
+    return { content: existing, replacedMediaKey };
   }
 }
 
