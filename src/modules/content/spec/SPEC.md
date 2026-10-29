@@ -14,3 +14,19 @@ created: 2026-10-29
 - Authentication required for PUT (JwtAuthGuard + RolesGuard).
 - No partial merge: full replace contract.
 - id and updatedAt are backend-only metadata, not transmitted to frontend as state (stripped in App.tsx).
+
+## Amendment — Remaining About sync fixes (sdd-session-2026-10-29-02, spec)
+
+Formal specification: `.opencode/specs/sdd-session-2026-10-29-02/spec.md`.
+
+- Frontend `App.tsx` must normalize `GET /about` payload by allow-listing only domain
+  fields and validating with `AboutContentSchema.strict()`; transport metadata (`id`,
+  `updatedAt`, `expectedUpdatedAt`) must not enter Redux.
+- Mount-time load of `/about` is required; guarded by an in-flight promise ref.
+- After every successful `PUT /about`, the frontend must advance the local document's
+  `updatedAt` to the server-returned value to avoid false 409s.
+- 409 responses carry `conflicts.currentUpdatedAt`; frontend should surface a conflict
+  toast, advance the revision only, and preserve pending edits (no auto-refetch).
+- Portrait upload is carried by `PUT /about` (single channel); `X-Replaced-Media-Key`
+  cleanup stays wired in the RTK Query mutation's `onQueryStarted`.
+- Multi-entity migration remains out of scope; About-only.
