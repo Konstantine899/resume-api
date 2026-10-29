@@ -8,3 +8,5 @@ coverage/
 *.log
 .opencode/logs/
 .opencode/context/
+# Local media root (dev/test default of UPLOADS_DIR)
+/uploads/

@@ -1,3 +1,5 @@
+import { resolve } from 'node:path';
+
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -46,7 +48,7 @@ describe('health endpoints', () => {
     const response = await request(app.getHttpServer()).get('/health/ready');
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ status: 'ok', checks: { database: 'up' } });
+    expect(response.body).toEqual({ status: 'ok', checks: { database: 'up', media: 'up' } });
   });
 
   it('returns a correlation id and security headers on every response', async () => {
@@ -94,6 +96,7 @@ describe('swagger gating', () => {
     const production = await createIsolatedApp({
       SWAGGER_ENABLED: 'true',
       NODE_ENV: 'production',
+      UPLOADS_DIR: resolve('uploads'),
     });
 
     expect((await request(production.getHttpServer()).get('/docs')).status).toBe(404);
