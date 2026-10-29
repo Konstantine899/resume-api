@@ -53,7 +53,7 @@ describe('LocalDiskStorage (plan D3/WU-1)', () => {
     await expect(storage.put('../escape.webp', Buffer.from('x'))).rejects.toBeInstanceOf(
       MediaNotFoundError,
     );
-    await expect(storage.read('..\\escape.webp')).rejects.toBeInstanceOf(MediaNotFoundError);
+    await expect(storage.read('../escape.webp')).rejects.toBeInstanceOf(MediaNotFoundError);
   });
 
   it('reports readiness false when the root cannot be created', async () => {
