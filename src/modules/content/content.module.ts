@@ -51,6 +51,7 @@ import {
   TechnologyController,
 } from './presentation/content.controller';
 import { ContentImportController } from './presentation/import.controller';
+import { SiteSettingsController } from './presentation/site-settings.controller';
 
 @Module({
   imports: [PrismaModule, AuthModule],
@@ -62,6 +63,7 @@ import { ContentImportController } from './presentation/import.controller';
     JobController,
     TechnologyController,
     ContentImportController,
+    SiteSettingsController,
   ],
   providers: [
     { provide: ABOUT_REPOSITORY, useClass: PrismaAboutRepository },
