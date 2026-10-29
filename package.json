@@ -31,7 +31,8 @@
     "prod": "concurrently -n db,api --kill-others-on-fail \"npm run prod:db\" \"npm run prod:api\"",
     "dev:stop": "docker compose down",
     "migrate:media:paths": "npm run build && node dist/modules/media/presentation/cli/migrate-document-image-paths.js",
-    "backfill:media:variants": "npm run build && node dist/modules/media/presentation/cli/backfill-media-variants.js"
+    "backfill:media:variants": "npm run build && node dist/modules/media/presentation/cli/backfill-media-variants.js",
+    "gc:media": "npm run build && node dist/modules/media/presentation/cli/garbage-collect-media.js"
   },
   "lint-staged": {
     "*.{ts,js}": [
