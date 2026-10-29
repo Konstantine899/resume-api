@@ -6,12 +6,15 @@ import {
   Param,
   Post,
   Put,
+  Res,
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../../auth/presentation/jwt-auth.guard';
 import { RolesGuard } from './roles.guard';
+import type { AboutContentProps } from '../domain/aggregates';
+import type { Response } from 'express';
 import {
   aboutUpsertSchema,
   contactUpsertSchema,
@@ -79,12 +82,22 @@ export class AboutController {
     private readonly getAbout: GetAboutUseCase,
     private readonly upsertAbout: UpsertAboutUseCase,
   ) {}
-  @Get() get() {
-    return this.getAbout.execute();
+  @Get() async get() {
+    const result = await this.getAbout.execute();
+    return result ? result.toProps() : null;
   }
-  @Put() @UseGuards(...GUARDS) upsert(@Body() body: unknown) {
+  @Put()
+  @UseGuards(...GUARDS)
+  async upsert(
+    @Body() body: unknown,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AboutContentProps> {
     const cmd: AboutUpsertCommand = parseOrThrow<AboutUpsertCommand>(aboutUpsertSchema, body);
-    return this.upsertAbout.execute(cmd);
+    const result = await this.upsertAbout.execute(cmd);
+    if (result.replacedMediaKey) {
+      res.setHeader('X-Replaced-Media-Key', result.replacedMediaKey);
+    }
+    return result.content.toProps();
   }
 }
 

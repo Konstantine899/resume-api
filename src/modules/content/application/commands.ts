@@ -1,5 +1,6 @@
 import type { LocalizedText } from '../domain/localized-text';
 import type {
+  AboutContent,
   AboutContentProps,
   ContactContentProps,
   JobProps,
@@ -9,8 +10,14 @@ import type {
   TechnologyProps,
 } from '../domain/aggregates';
 
+export interface AboutUpsertResult {
+  content: AboutContent;
+  replacedMediaKey: string | null;
+}
+
 export type AboutUpsertCommand = Partial<Omit<AboutContentProps, 'id' | 'updatedAt'>> & {
   id?: string;
+  expectedUpdatedAt?: string | Date;
 };
 export type ContactUpsertCommand = Partial<Omit<ContactContentProps, 'id' | 'updatedAt'>> & {
   id?: string;
