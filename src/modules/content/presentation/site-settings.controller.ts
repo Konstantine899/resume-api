@@ -3,22 +3,6 @@ import { BadRequestException, Body, Controller, Get, Put, UseGuards } from '@nes
 import { JwtAuthGuard } from '../../auth/presentation/jwt-auth.guard';
 import { RolesGuard } from './roles.guard';
 import { siteSettingsUpsertSchema } from './content.schemas';
-
-function parseOrThrow<T>(
-  schema: {
-    safeParse: (v: unknown) => { success: boolean; data?: unknown; error?: { message: string } };
-  },
-  body: unknown,
-): T {
-  const r = schema.safeParse(body);
-  if (!r.success) {
-    throw new BadRequestException({
-      tag: 'site-settings.validation',
-      message: r.error?.message ?? 'invalid body',
-    });
-  }
-  return r.data as T;
-}
 import { GetSiteSettingsUseCase, UpsertSiteSettingsUseCase } from '../application/use-cases';
 import type { SiteSettingsUpsertCommand } from '../application/commands';
 
@@ -45,10 +29,14 @@ export class SiteSettingsController {
   @Put()
   @UseGuards(...GUARDS)
   async update(@Body() body: unknown): Promise<{ resumeUrl: string | null }> {
-    const cmd: SiteSettingsUpsertCommand = parseOrThrow<SiteSettingsUpsertCommand>(
-      siteSettingsUpsertSchema,
-      body ?? {},
-    );
+    const parsed = siteSettingsUpsertSchema.safeParse(body ?? {});
+    if (!parsed.success) {
+      throw new BadRequestException({
+        tag: 'site-settings.validation',
+        message: parsed.error?.message ?? 'invalid body',
+      });
+    }
+    const cmd: SiteSettingsUpsertCommand = parsed.data;
     const result = await this.upsertSiteSettings.execute(cmd);
     return { resumeUrl: result.resumeUrl ?? null };
   }

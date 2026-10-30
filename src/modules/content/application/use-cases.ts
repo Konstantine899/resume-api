@@ -139,12 +139,14 @@ export class UpsertSiteSettingsUseCase {
   async execute(cmd: SiteSettingsUpsertCommand): Promise<SiteSettings> {
     const existing = await this.repo.get();
     if (!existing) {
-      const created = SiteSettings.create(cmd as never);
+      const created = SiteSettings.create({ resumeUrl: cmd.resumeUrl });
       await this.repo.save(created);
       return created;
     }
-    existing.update(cmd);
-    await this.repo.save(existing);
+    if (cmd.resumeUrl !== undefined) {
+      existing.update({ resumeUrl: cmd.resumeUrl });
+      await this.repo.save(existing);
+    }
     return existing;
   }
 }
