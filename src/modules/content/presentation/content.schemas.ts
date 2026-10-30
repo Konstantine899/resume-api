@@ -166,3 +166,16 @@ export const jobUpdateSchema = z
     featured: z.boolean().optional(),
   })
   .strict();
+
+// ---- Site settings ----
+export const siteSettingsUpsertSchema = z
+  .object({
+    resumeUrl: z
+      .string()
+      .trim()
+      .url()
+      .refine((v) => v.startsWith('https://'), { message: 'resumeUrl must use https' })
+      .nullable()
+      .optional(),
+  })
+  .strict();

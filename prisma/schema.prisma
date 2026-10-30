@@ -15,6 +15,7 @@ generator client {
 /// Single-user personal site: the only possible role is `admin`.
 enum Role {
   ADMIN
+  USER
 }
 
 /// Refresh-session lifecycle: active -> used (rotation) / revoked (reuse,
@@ -146,6 +147,15 @@ model Technology {
   url           String
   invertInDark  Boolean?
   updatedAt     DateTime @updatedAt
+
+  @@index([updatedAt])
+}
+
+model SiteSettings {
+  id        String   @id @default("singleton")
+  resumeUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([updatedAt])
 }
