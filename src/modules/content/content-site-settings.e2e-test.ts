@@ -50,4 +50,25 @@ describe('GET /site/settings (public)', () => {
     const fetched = await request(ctx.app.getHttpServer()).get('/site/settings');
     expect(fetched.body.resumeUrl).toBe('https://example.com/resume.pdf');
   });
+
+  it('rejects invalid resumeUrl with 400', async () => {
+    const invalid = await request(ctx.app.getHttpServer())
+      .put('/site/settings')
+      .set('authorization', `Bearer ${token}`)
+      .send({ resumeUrl: 'not-a-url' });
+    expect(invalid.status).toBe(400);
+
+    const empty = await request(ctx.app.getHttpServer())
+      .put('/site/settings')
+      .set('authorization', `Bearer ${token}`)
+      .send({ resumeUrl: '' });
+    expect(empty.status).toBe(400);
+  });
+
+  it('requires authentication for PUT', async () => {
+    const unauth = await request(ctx.app.getHttpServer())
+      .put('/site/settings')
+      .send({ resumeUrl: 'https://example.com/resume.pdf' });
+    expect(unauth.status).toBe(401);
+  });
 });
