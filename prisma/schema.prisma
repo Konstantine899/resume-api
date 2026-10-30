@@ -149,3 +149,12 @@ model Technology {
 
   @@index([updatedAt])
 }
+
+model SiteSettings {
+  id        String   @id @default("singleton")
+  resumeUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([updatedAt])
+}

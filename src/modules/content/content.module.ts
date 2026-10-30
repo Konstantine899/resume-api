@@ -9,12 +9,14 @@ import {
   PrismaProjectRepository,
   PrismaSkillCategoryRepository,
   PrismaTechnologyRepository,
+  PrismaSiteSettingsRepository,
 } from './infrastructure/prisma-content.repository';
 import {
   ABOUT_REPOSITORY,
   CONTACT_REPOSITORY,
   JOB_REPOSITORY,
   PROJECT_REPOSITORY,
+  SITE_SETTINGS_REPOSITORY,
   SKILL_CATEGORY_REPOSITORY,
   TECHNOLOGY_REPOSITORY,
 } from './content.tokens';
@@ -28,6 +30,7 @@ import {
   DryRunContentImporter,
   GetAboutUseCase,
   GetContactUseCase,
+  GetSiteSettingsUseCase,
   GetJobUseCase,
   GetProjectUseCase,
   ListJobsUseCase,
@@ -38,6 +41,7 @@ import {
   UpdateProjectUseCase,
   UpsertAboutUseCase,
   UpsertContactUseCase,
+  UpsertSiteSettingsUseCase,
   UpsertSkillCategoryUseCase,
   UpsertTechnologyUseCase,
 } from './application/use-cases';
@@ -72,8 +76,10 @@ import { SiteSettingsController } from './presentation/site-settings.controller'
     { provide: SKILL_CATEGORY_REPOSITORY, useClass: PrismaSkillCategoryRepository },
     { provide: JOB_REPOSITORY, useClass: PrismaJobRepository },
     { provide: TECHNOLOGY_REPOSITORY, useClass: PrismaTechnologyRepository },
+    { provide: SITE_SETTINGS_REPOSITORY, useClass: PrismaSiteSettingsRepository },
     GetAboutUseCase,
     UpsertAboutUseCase,
+    UpsertSiteSettingsUseCase,
     GetContactUseCase,
     UpsertContactUseCase,
     ListProjectsUseCase,
@@ -86,6 +92,7 @@ import { SiteSettingsController } from './presentation/site-settings.controller'
     DeleteSkillCategoryUseCase,
     ListJobsUseCase,
     GetJobUseCase,
+    GetSiteSettingsUseCase,
     CreateJobUseCase,
     UpdateJobUseCase,
     DeleteJobUseCase,
@@ -100,6 +107,7 @@ import { SiteSettingsController } from './presentation/site-settings.controller'
     PrismaSkillCategoryRepository,
     PrismaJobRepository,
     PrismaTechnologyRepository,
+    PrismaSiteSettingsRepository,
   ],
   exports: [DryRunContentImporter],
 })

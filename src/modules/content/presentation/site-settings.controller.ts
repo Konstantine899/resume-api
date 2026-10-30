@@ -1,14 +1,28 @@
 import { BadRequestException, Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
-import { z } from 'zod';
-// The generated client no longer exposes a namespace type alias for this model;
-// keep the controller untyped on the returned row instead.
-import { PrismaService } from '../../../prisma/prisma.service';
+
 import { JwtAuthGuard } from '../../auth/presentation/jwt-auth.guard';
 import { RolesGuard } from './roles.guard';
+import { siteSettingsUpsertSchema } from './content.schemas';
 
-const siteSettingsSchema = z.object({
-  resumeUrl: z.string().trim().url().nullable().optional(),
-});
+function parseOrThrow<T>(
+  schema: {
+    safeParse: (v: unknown) => { success: boolean; data?: unknown; error?: { message: string } };
+  },
+  body: unknown,
+): T {
+  const r = schema.safeParse(body);
+  if (!r.success) {
+    throw new BadRequestException({
+      tag: 'site-settings.validation',
+      message: r.error?.message ?? 'invalid body',
+    });
+  }
+  return r.data as T;
+}
+import { GetSiteSettingsUseCase, UpsertSiteSettingsUseCase } from '../application/use-cases';
+import type { SiteSettingsUpsertCommand } from '../application/commands';
+
+const GUARDS = [JwtAuthGuard, RolesGuard];
 
 /**
  * Public read of the singleton site settings document. Keeping this in the
@@ -17,43 +31,25 @@ const siteSettingsSchema = z.object({
  */
 @Controller('site/settings')
 export class SiteSettingsController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly getSiteSettings: GetSiteSettingsUseCase,
+    private readonly upsertSiteSettings: UpsertSiteSettingsUseCase,
+  ) {}
 
   @Get()
   async get(): Promise<{ resumeUrl: string | null }> {
-    const settings = this.prisma as unknown as {
-      siteSettings: { findUnique: (args: unknown) => Promise<{ resumeUrl: string | null } | null> };
-    };
-    const record = await settings.siteSettings.findUnique({
-      where: { id: 'singleton' },
-    });
-    return { resumeUrl: record?.resumeUrl ?? null };
+    const result = await this.getSiteSettings.execute();
+    return { resumeUrl: result?.resumeUrl ?? null };
   }
 
   @Put()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(...GUARDS)
   async update(@Body() body: unknown): Promise<{ resumeUrl: string | null }> {
-    const parsed = siteSettingsSchema.safeParse(body ?? {});
-    if (!parsed.success) {
-      throw new BadRequestException('invalid site settings');
-    }
-    const next = parsed.data.resumeUrl ?? null;
-    const settings = this.prisma as unknown as {
-      siteSettings: {
-        findUnique: (args: unknown) => Promise<{ resumeUrl: string | null } | null>;
-        create: (args: unknown) => Promise<{ resumeUrl: string | null }>;
-        upsert: (args: unknown) => Promise<{ resumeUrl: string | null }>;
-      };
-    };
-    const record =
-      parsed.data.resumeUrl === undefined
-        ? (await settings.siteSettings.findUnique({ where: { id: 'singleton' } })) ||
-          (await settings.siteSettings.create({ data: { id: 'singleton', resumeUrl: null } }))
-        : await settings.siteSettings.upsert({
-            where: { id: 'singleton' },
-            create: { id: 'singleton', resumeUrl: next },
-            update: { resumeUrl: next },
-          });
-    return { resumeUrl: record.resumeUrl ?? null };
+    const cmd: SiteSettingsUpsertCommand = parseOrThrow<SiteSettingsUpsertCommand>(
+      siteSettingsUpsertSchema,
+      body ?? {},
+    );
+    const result = await this.upsertSiteSettings.execute(cmd);
+    return { resumeUrl: result.resumeUrl ?? null };
   }
 }

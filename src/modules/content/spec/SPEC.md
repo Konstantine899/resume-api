@@ -30,3 +30,29 @@ Formal specification: `.opencode/specs/sdd-session-2026-10-29-02/spec.md`.
 - Portrait upload is carried by `PUT /about` (single channel); `X-Replaced-Media-Key`
   cleanup stays wired in the RTK Query mutation's `onQueryStarted`.
 - Multi-entity migration remains out of scope; About-only.
+
+## Amendment — SiteSettings singleton (2026-10-30)
+
+### Contract
+
+- Endpoint: `GET /site/settings` (public), `PUT /site/settings` (admin-only).
+- Storage: Prisma model `SiteSettings` table `SiteSettings` with:
+  - `id` (text, PK, default `'singleton'`)
+  - `resumeUrl` (text, nullable)
+  - `createdAt` (timestamp, default now)
+  - `updatedAt` (timestamp, auto-updated)
+- GET response: `{ resumeUrl: string | null }`.
+- PUT body: `{ resumeUrl?: string | null }`.
+- Zod validation: `resumeUrl` trimmed, valid HTTPS URL or `null`; empty string invalid.
+- Security: PUT requires `JwtAuthGuard` + `RolesGuard`; 401 without auth, 403 missing role.
+- RFC 7807 error envelope for validation/authorization failures.
+- Optimistic concurrency: not used (singleton document, last write wins). Reason:
+  conflict probability is low and a full replace does not create structural merge risk.
+- URL policy: HTTPS only. Reason: prevents mixed content/insecure download targets.
+
+### Behaviour
+
+- If record absent, GET returns `null`.
+- PUT with `{}` keeps previous value (no update).
+- PUT with `{ resumeUrl: null }` clears the field.
+- Repository is the only Prisma access point.

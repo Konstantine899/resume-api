@@ -10,6 +10,7 @@ import {
   Project,
   SkillCategory,
   Technology,
+  SiteSettings,
 } from '../domain/aggregates';
 import type {
   AboutRepository,
@@ -18,6 +19,7 @@ import type {
   ProjectRepository,
   SkillCategoryRepository,
   TechnologyRepository,
+  SiteSettingsRepository,
 } from '../domain/ports';
 import { AboutConflictError, ContentNotFoundError } from './errors';
 import type {
@@ -28,6 +30,7 @@ import type {
   JobUpdateCommand,
   ProjectCreateCommand,
   ProjectUpdateCommand,
+  SiteSettingsUpsertCommand,
   SkillCategoryUpsertCommand,
   TechnologyUpsertCommand,
 } from './commands';
@@ -36,6 +39,7 @@ import {
   CONTACT_REPOSITORY,
   JOB_REPOSITORY,
   PROJECT_REPOSITORY,
+  SITE_SETTINGS_REPOSITORY,
   SKILL_CATEGORY_REPOSITORY,
   TECHNOLOGY_REPOSITORY,
 } from '../content.tokens';
@@ -112,6 +116,30 @@ export class UpsertContactUseCase {
     const existing = await this.repo.get();
     if (!existing) {
       const created = ContactContent.create(cmd as never);
+      await this.repo.save(created);
+      return created;
+    }
+    existing.update(cmd);
+    await this.repo.save(existing);
+    return existing;
+  }
+}
+
+@Injectable()
+export class GetSiteSettingsUseCase {
+  constructor(@Inject(SITE_SETTINGS_REPOSITORY) private readonly repo: SiteSettingsRepository) {}
+  async execute(): Promise<SiteSettings | null> {
+    return this.repo.get();
+  }
+}
+
+@Injectable()
+export class UpsertSiteSettingsUseCase {
+  constructor(@Inject(SITE_SETTINGS_REPOSITORY) private readonly repo: SiteSettingsRepository) {}
+  async execute(cmd: SiteSettingsUpsertCommand): Promise<SiteSettings> {
+    const existing = await this.repo.get();
+    if (!existing) {
+      const created = SiteSettings.create(cmd as never);
       await this.repo.save(created);
       return created;
     }

@@ -8,6 +8,7 @@ import type {
   SkillCategoryProps,
   SkillTechnologyProps,
   TechnologyProps,
+  SiteSettingsProps,
 } from '../domain/aggregates';
 
 export interface AboutUpsertResult {
@@ -40,6 +41,9 @@ export type JobUpdateCommand = { id: string } & Partial<
   Omit<JobProps, 'id' | 'updatedAt' | 'createdAt'>
 >;
 export type TechnologyUpsertCommand = Omit<TechnologyProps, 'updatedAt'>;
+export type SiteSettingsUpsertCommand = Partial<Omit<SiteSettingsProps, 'id' | 'updatedAt'>> & {
+  id?: string;
+};
 
 export { type LocalizedText };
 export type { SkillTechnologyProps };

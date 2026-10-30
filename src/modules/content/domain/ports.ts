@@ -4,6 +4,7 @@ import type { Project } from './aggregates';
 import type { SkillCategory } from './aggregates';
 import type { Job } from './aggregates';
 import type { Technology } from './aggregates';
+import type { SiteSettings } from './aggregates';
 
 export interface AboutRepository {
   get(): Promise<AboutContent | null>;
@@ -41,6 +42,11 @@ export interface TechnologyRepository {
   list(): Promise<Technology[]>;
   save(entity: Technology): Promise<void>;
   delete(key: string): Promise<void>;
+}
+
+export interface SiteSettingsRepository {
+  get(): Promise<SiteSettings | null>;
+  save(entity: SiteSettings): Promise<void>;
 }
 
 export type ContentUpdatedAction = 'create' | 'update' | 'delete';
