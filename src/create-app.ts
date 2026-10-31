@@ -39,6 +39,7 @@ export async function createApp(env: Env): Promise<INestApplication> {
       }
     },
     credentials: true,
+    exposedHeaders: ['x-request-id', 'retry-after'],
   });
   app.use(pinoHttp({ ...createPinoOptions(env), genReqId }));
   // Echo the correlation id so clients can tie a response to its log lines.

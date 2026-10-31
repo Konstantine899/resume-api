@@ -14,7 +14,6 @@ import {
   MEDIA_STORAGE,
   type MediaConfig,
 } from './media.tokens';
-import { ImagesCompatController } from './presentation/images-compat.controller';
 import { MediaController } from './presentation/media.controller';
 
 /**
@@ -24,7 +23,7 @@ import { MediaController } from './presentation/media.controller';
  */
 @Module({
   imports: [AuthModule],
-  controllers: [MediaController, ImagesCompatController],
+  controllers: [MediaController],
   providers: [
     {
       provide: MEDIA_CONFIG,
