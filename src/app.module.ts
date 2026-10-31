@@ -12,6 +12,7 @@ import { HealthModule } from './health/health.module';
 import { Rfc7807ExceptionFilter } from './rfc7807-exception.filter';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContentModule } from './modules/content/content.module';
+import { AssetsModule } from './modules/assets/assets.module';
 import { MediaModule } from './modules/media/media.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -22,6 +23,7 @@ import { PrismaModule } from './prisma/prisma.module';
     }),
     PrismaModule,
     AuthModule,
+    AssetsModule,
     ContentModule,
     MediaModule,
     HealthModule,

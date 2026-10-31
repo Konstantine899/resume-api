@@ -515,5 +515,49 @@ export class Job {
   }
 }
 
+// ---- SiteSettings ----
+export interface SiteSettingsProps {
+  id: string;
+  resumeUrl: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+export class SiteSettings {
+  private props: SiteSettingsProps;
+  private constructor(props: SiteSettingsProps) {
+    this.props = props;
+  }
+  static create(input: { resumeUrl?: string | null; id?: string; createdAt?: Date }): SiteSettings {
+    return new SiteSettings({
+      id: input.id ?? 'singleton',
+      resumeUrl: input.resumeUrl ?? null,
+      createdAt: input.createdAt ?? new Date(),
+      updatedAt: new Date(),
+    });
+  }
+  static reconstitute(props: SiteSettingsProps): SiteSettings {
+    return new SiteSettings(props);
+  }
+  get id() {
+    return this.props.id;
+  }
+  get resumeUrl() {
+    return this.props.resumeUrl;
+  }
+  get createdAt() {
+    return this.props.createdAt;
+  }
+  get updatedAt() {
+    return this.props.updatedAt;
+  }
+  update(input: Partial<Omit<SiteSettingsProps, 'id' | 'createdAt' | 'updatedAt'>>): void {
+    if (input.resumeUrl !== undefined) this.props.resumeUrl = input.resumeUrl;
+    this.props.updatedAt = new Date();
+  }
+  toProps(): SiteSettingsProps {
+    return { ...this.props };
+  }
+}
+
 // LocalizedText re-export convenience (not used)
 export { LT as LocalizedTextCtor };

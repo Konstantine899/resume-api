@@ -10,6 +10,7 @@ import {
   Project,
   SkillCategory,
   Technology,
+  SiteSettings,
 } from '../domain/aggregates';
 import type {
   AboutRepository,
@@ -18,6 +19,7 @@ import type {
   ProjectRepository,
   SkillCategoryRepository,
   TechnologyRepository,
+  SiteSettingsRepository,
 } from '../domain/ports';
 
 function asJson(value: unknown): any {
@@ -387,5 +389,38 @@ export class PrismaTechnologyRepository implements TechnologyRepository {
   }
   async delete(key: string): Promise<void> {
     await this.prisma.technology.delete({ where: { key } });
+  }
+}
+
+@Injectable()
+export class PrismaSiteSettingsRepository implements SiteSettingsRepository {
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+
+  async get(): Promise<SiteSettings | null> {
+    const row = await this.prisma.siteSettings.findUnique({ where: { id: 'singleton' } });
+    if (!row) return null;
+    return SiteSettings.reconstitute({
+      id: row.id,
+      resumeUrl: row.resumeUrl ?? null,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    });
+  }
+
+  async save(entity: SiteSettings): Promise<void> {
+    const p = entity.toProps();
+    await this.prisma.siteSettings.upsert({
+      where: { id: p.id },
+      create: {
+        id: p.id,
+        resumeUrl: p.resumeUrl ?? null,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+      },
+      update: {
+        resumeUrl: p.resumeUrl ?? null,
+        updatedAt: p.updatedAt,
+      },
+    });
   }
 }

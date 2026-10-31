@@ -10,3 +10,6 @@ coverage/
 .opencode/context/
 # Local media root (dev/test default of UPLOADS_DIR)
 /uploads/
+
+# Shared asset seed staging folder (runtime source lives outside working tree)
+/shared-assets/

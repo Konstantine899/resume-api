@@ -69,6 +69,10 @@ const envSchema = z
     // Media root (plan WU-1): relative in dev/test, absolute in production so
     // a container never writes into an accidental working directory.
     UPLOADS_DIR: z.string().min(1, 'UPLOADS_DIR must not be empty').default('uploads'),
+    SHARED_ASSETS_DIR: z
+      .string()
+      .min(1, 'SHARED_ASSETS_DIR must not be empty')
+      .default('shared-assets'),
   })
   .superRefine((value, ctx) => {
     if (value.NODE_ENV === 'production' && !isAbsolute(value.UPLOADS_DIR)) {

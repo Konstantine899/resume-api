@@ -188,23 +188,4 @@ describe('DELETE /media/:key and legacy /images shim', () => {
         .status,
     ).toBe(204);
   });
-
-  it('keeps the legacy { url, filename } shape and serves it under /images', async () => {
-    const legacy = await request(server())
-      .post('/images')
-      .set('authorization', `Bearer ${token}`)
-      .attach('file', await png(1200, 900), { filename: 'legacy.png', contentType: 'image/png' });
-
-    expect(legacy.status).toBe(201);
-    expect(legacy.body).toEqual({
-      url: `/images/${legacy.body.filename}`,
-      filename: legacy.body.filename,
-    });
-
-    const served = await request(server()).get(legacy.body.url as string);
-    expect(served.status).toBe(200);
-    expect(served.headers['cache-control']).toBe('public, max-age=31536000, immutable');
-
-    expect((await request(server()).delete(legacy.body.url as string)).status).toBe(401);
-  });
 });

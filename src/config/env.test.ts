@@ -29,6 +29,7 @@ describe('parseEnv', () => {
       FRONTEND_ORIGIN: 'http://localhost:5173',
       COOKIE_PATH: '/auth',
       UPLOADS_DIR: 'uploads',
+      SHARED_ASSETS_DIR: 'shared-assets',
     });
   });
 

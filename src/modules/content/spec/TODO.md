@@ -1,22 +1,11 @@
----
-status: approved
-created: 2026-10-25
-epic: backend-platform
-step: 4
-spec: SPEC.md
----
+# TODO — About-only cache sync micro-slice (backend)
 
-# TODO — Step 4: content module skeleton
-
-- [ ] S-0. SPEC+TODO утверждены.
-- [ ] S-1. LocalizedText VO + тесты.
-- [ ] S-2. SafeSvg VO + sanitize/validation тесты.
-- [ ] S-3. Инварианты агрегатов.
-- [ ] S-4. Ports репозиториев.
-- [ ] S-5. Use cases create/update/delete/find + Commands + dry-run importer ACL stubs.
-- [ ] S-6. Prisma adapters mapping.
-- [ ] S-7. Controllers scaffold + DTO parse + auth guard + RBAC 403.
-- [ ] S-8. Module wiring.
-- [ ] S-9. Export JwtAuthGuard (готово в auth).
-- [ ] S-10. Migration `content-aggregates` + generate + type-check/test.
-- [ ] S-11. Block 2: полноценный API transform, OpenAPI, e2e.
+- Ensure aboutUpsertSchema validation is strict and returns appropriate error details.
+- Verify that PUT returns updatedAt and portrait path.
+- Confirm that GET returns null when no record.
+- Test auth guards: unauthenticated PUT → 401.
+- Test invalid payload → 400 with validation errors.
+- Ensure X-Replaced-Media-Key header is set when media replaced.
+- Verify that mutation failure does not alter state.
+- Confirm that the use-cases persist-first pattern is respected (though persistence is in infrastructure).
+- Add integration tests for full replace and null scenarios.

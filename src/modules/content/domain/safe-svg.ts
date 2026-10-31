@@ -20,7 +20,7 @@ export class SafeSvg {
     if (typeof raw !== 'string' || raw.trim().length === 0) {
       throw new SafeSvgDomainError('SafeSvg: empty svg');
     }
-    if (!/^\s*<svg[\s>]/i.test(raw)) {
+    if (!/^\s*(?:<\?xml[^?]*\?>\s*)*(?:<!--[\s\S]*?-->\s*)*<svg[\s>]/i.test(raw)) {
       throw new SafeSvgDomainError('SafeSvg: not an svg root');
     }
     if (SafeSvg.isUnsafe(raw)) {
