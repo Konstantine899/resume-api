@@ -76,6 +76,7 @@ export class PrismaAboutRepository implements AboutRepository {
       statLabels: row.statLabels ? toRecordLocalized(row.statLabels) : undefined,
       ctaLabel: row.ctaLabel ? LocalizedText.fromJSON(row.ctaLabel) : null,
       portrait: row.portrait ?? undefined,
+      stack: (row.stack as string[] | undefined) ?? undefined,
       updatedAt: row.updatedAt,
     });
   }
@@ -93,6 +94,7 @@ export class PrismaAboutRepository implements AboutRepository {
 
         ctaLabel: asJson(p.ctaLabel ? asLocalizedJson(p.ctaLabel) : null),
         portrait: p.portrait ?? null,
+        stack: p.stack ? asJson(p.stack) : null,
         updatedAt: p.updatedAt,
       },
       update: {
@@ -103,6 +105,7 @@ export class PrismaAboutRepository implements AboutRepository {
 
         ctaLabel: asJson(p.ctaLabel ? asLocalizedJson(p.ctaLabel) : null),
         portrait: p.portrait ?? null,
+        stack: p.stack ? asJson(p.stack) : null,
         updatedAt: p.updatedAt,
       },
     });

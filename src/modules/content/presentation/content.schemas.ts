@@ -23,6 +23,7 @@ export const aboutUpsertSchema = z
     statLabels: z.record(z.string().trim().min(1).max(48), localizedTextSchema).optional(),
     ctaLabel: localizedTextSchema.nullable().optional(),
     portrait: z.string().trim().min(1).max(260).optional(),
+    stack: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
     expectedUpdatedAt: z.string().datetime().optional(),
   })
   .strict();

@@ -52,6 +52,7 @@ export const aboutImportSchema = z
     stats: z.record(z.string().trim().min(1).max(40), localizedTextImportSchema).default({}),
     statLabels: z.record(z.string().trim().min(1).max(40), localizedTextImportSchema).optional(),
     ctaLabel: localizedTextImportSchema.nullable().optional(),
+    stack: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
     portrait: z.string().trim().min(1).max(260).optional(),
   })
   .passthrough();

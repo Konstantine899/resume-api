@@ -60,6 +60,7 @@ export interface AboutContentProps {
   statLabels?: Record<string, LocalizedText>;
   ctaLabel: LocalizedText | null;
   portrait?: string;
+  stack?: string[];
   updatedAt: Date;
 }
 export class AboutContent {
@@ -82,6 +83,7 @@ export class AboutContent {
       statLabels: input.statLabels,
       ctaLabel: input.ctaLabel,
       portrait: input.portrait,
+      stack: input.stack,
       updatedAt: new Date(),
     });
   }
@@ -109,6 +111,9 @@ export class AboutContent {
   get portrait() {
     return this.props.portrait;
   }
+  get stack() {
+    return this.props.stack;
+  }
   get updatedAt() {
     return this.props.updatedAt;
   }
@@ -125,6 +130,7 @@ export class AboutContent {
     if (input.statLabels !== undefined) this.props.statLabels = input.statLabels;
     if (input.ctaLabel !== undefined) this.props.ctaLabel = input.ctaLabel;
     if (input.portrait !== undefined) this.props.portrait = input.portrait;
+    if (input.stack !== undefined) this.props.stack = input.stack;
     this.props.updatedAt = new Date();
   }
   toProps(): AboutContentProps {

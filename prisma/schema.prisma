@@ -71,6 +71,7 @@ model AboutContent {
   statLabels   Json?
   ctaLabel     Json?
   portrait     String?
+  stack        Json?
   updatedAt    DateTime @updatedAt
 
   @@index([updatedAt])
