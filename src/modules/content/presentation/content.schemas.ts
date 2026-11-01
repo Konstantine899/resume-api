@@ -15,6 +15,11 @@ export const localRecord = <T extends z.ZodTypeAny>(schema: T) =>
   z.record(z.string().trim().min(1).max(48), schema);
 
 // ---- About ----
+const stackKeySchema = z
+  .string()
+  .trim()
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'stack key slug');
+
 export const aboutUpsertSchema = z
   .object({
     fullName: nonEmpty_trimmed(2, 80).optional(),
@@ -23,6 +28,7 @@ export const aboutUpsertSchema = z
     statLabels: z.record(z.string().trim().min(1).max(48), localizedTextSchema).optional(),
     ctaLabel: localizedTextSchema.nullable().optional(),
     portrait: z.string().trim().min(1).max(260).optional(),
+    stack: z.array(stackKeySchema).min(0).max(20).optional(),
     expectedUpdatedAt: z.string().datetime().optional(),
   })
   .strict();
